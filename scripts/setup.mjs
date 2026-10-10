@@ -1,0 +1,10 @@
+import {randomBytes} from 'node:crypto';
+import {writeFileSync,existsSync} from 'node:fs';
+if(existsSync('.env')||existsSync('ACCESO_LOCAL.txt')) throw Error('La configuración ya existe. No se sobrescriben credenciales.');
+const secret=()=>randomBytes(32).toString('hex');
+const db=secret(), password=randomBytes(18).toString('base64url'),programmerPassword=randomBytes(18).toString('base64url');
+const config=`POSTGRES_DB=cinemateca\nPOSTGRES_USER=cinemateca\nPOSTGRES_PASSWORD=${db}\nDATABASE_URL=postgresql://cinemateca:${db}@localhost:5432/cinemateca\nJWT_SECRET=${secret()}\nSTREAM_SECRET=${secret()}\nTICKET_SECRET=${secret()}\nADMIN_EMAIL=admin@cinemateca.local\nADMIN_PASSWORD=${password}\nPROGRAMMER_EMAIL=programador@cinemateca.local\nPROGRAMMER_PASSWORD=${programmerPassword}\nAPP_ORIGIN=http://localhost:3000\nCOOKIE_SECURE=false\nSTORAGE_DIR=./storage\nPAYMENT_MODE=simulation\n`;
+writeFileSync('.env',config,{mode:0o600});
+writeFileSync('ACCESO_LOCAL.txt',`Cuenta local inicial\nCorreo: admin@cinemateca.local\nContraseña: ${password}\n\nNo compartir este archivo. Cambiar la contraseña desde Mi perfil.\n`,{mode:0o600});
+writeFileSync('ACCESO_PROGRAMADOR.txt',`Correo: programador@cinemateca.local\nContrase\u00f1a: ${programmerPassword}\n`,{mode:0o600});
+console.log('Configuración creada. La contraseña está en ACCESO_LOCAL.txt.');

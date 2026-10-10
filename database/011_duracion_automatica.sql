@@ -1,0 +1,1 @@
+ALTER TABLE obras ALTER COLUMN duracion DROP NOT NULL;

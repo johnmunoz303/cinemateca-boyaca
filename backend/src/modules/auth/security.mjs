@@ -1,0 +1,6 @@
+import {randomBytes,scryptSync,timingSafeEqual,createHmac,createHash} from 'node:crypto';
+export function hashPassword(password){const salt=randomBytes(16).toString('hex');return `scrypt:${salt}:${scryptSync(password,salt,64).toString('hex')}`;}
+export function verifyPassword(password,stored){try{const [type,salt,hash]=stored.split(':');if(type!=='scrypt'||hash.length!==128)return false;return timingSafeEqual(Buffer.from(hash,'hex'),scryptSync(password,salt,64));}catch{return false;}}
+export const digest=value=>createHash('sha256').update(value).digest('hex');
+export function signPayload(data,secret){if(!secret||secret.length<32)throw Error('Secret missing');const encoded=Buffer.from(JSON.stringify(data)).toString('base64url');return encoded+'.'+createHmac('sha256',secret).update(encoded).digest('base64url');}
+export function verifyPayload(token,secret){try{const [data,signature,...extra]=token.split('.');if(extra.length||!secret)return null;const expected=createHmac('sha256',secret).update(data).digest();const actual=Buffer.from(signature,'base64url');if(actual.length!==expected.length||!timingSafeEqual(actual,expected))return null;const decoded=JSON.parse(Buffer.from(data,'base64url').toString());if(decoded.exp&&decoded.exp<=Date.now())return null;return decoded;}catch{return null;}}

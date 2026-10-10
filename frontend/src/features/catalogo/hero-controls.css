@@ -1,0 +1,13 @@
+.catalog-hero-controls{inset:0;pointer-events:none;display:block}
+.catalog-hero-controls>button{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;pointer-events:auto}
+.catalog-hero-controls>.hero-previous{left:14px}
+.catalog-hero-controls>.hero-next{right:14px}
+.catalog-hero-controls>.catalog-hero-dots{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);pointer-events:auto}
+.catalog-hero-info{padding-left:70px;padding-right:55px}
+@media(max-width:600px){
+  .catalog-hero-controls>button{width:34px;height:34px}
+  .catalog-hero-controls>.hero-previous{left:8px}
+  .catalog-hero-controls>.hero-next{right:8px}
+  .catalog-hero-info{padding-left:48px;padding-right:40px}
+  .catalog-hero-controls>.catalog-hero-dots{bottom:12px}
+}

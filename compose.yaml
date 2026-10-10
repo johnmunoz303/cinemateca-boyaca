@@ -1,0 +1,58 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports: ["127.0.0.1:5432:5432"]
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  storage-init:
+    image: alpine:3.21
+    command: ["sh", "-c", "mkdir -p /data && chown 1000:1000 /data"]
+    volumes: ["media_data:/data"]
+  frontend:
+    build: {context: ., args: {SERVICE: frontend}}
+    environment:
+      BACKEND_URL: http://backend:3000
+    ports: ["3000:3000"]
+    depends_on: [backend]
+  backend:
+    build: {context: ., args: {SERVICE: backend}}
+    env_file: .env
+    environment:
+      ALLOW_LAN_ACCESS: "true"
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      STORAGE_DIR: /data
+    volumes: ["media_data:/data"]
+    depends_on:
+      db: {condition: service_healthy}
+      storage-init: {condition: service_completed_successfully}
+  worker:
+    build: {context: ., dockerfile: Dockerfile.worker}
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      STORAGE_DIR: /data
+    volumes: ["media_data:/data"]
+    depends_on:
+      db: {condition: service_healthy}
+      storage-init: {condition: service_completed_successfully}
+  reservas-worker:
+    build: {context: ., dockerfile: Dockerfile.worker}
+    command: ["node","backend/scripts/reservations.mjs"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    depends_on:
+      db: {condition: service_healthy}
+volumes:
+  postgres_data:
+  media_data:

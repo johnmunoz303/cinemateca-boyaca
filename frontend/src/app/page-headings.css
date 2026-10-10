@@ -1,0 +1,29 @@
+.header-inner{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px}
+.header-inner>button:first-child{justify-self:start}
+.header-inner>.brand{justify-self:center;text-align:center}
+.header-inner>.header-actions{justify-self:end;min-width:0}
+main h1{text-align:center}
+.section-top{flex-wrap:wrap;justify-content:center;position:relative}
+.section-top>h1{width:100%}
+.work-page-content{width:100%;max-width:none;margin:0;padding-left:var(--page-gutter,24px);padding-right:var(--page-gutter,24px)}
+.work-page-title{justify-content:flex-start;text-align:left}
+.work-page-title h1{text-align:left}
+.section-detail-page>.detail-image{height:clamp(240px,32vw,520px);width:100%;object-fit:cover}
+.section-detail-page>.detail-description{max-width:none}
+.section-detail-page>.map{width:100%}
+@media(max-width:750px){
+  .work-page-content{padding-left:20px;padding-right:20px}
+  .section-detail-page>.detail-image{height:auto;aspect-ratio:3/2}
+}
+@media(max-width:600px){
+  .header-inner{gap:6px}
+  .header-inner>.brand{font-size:1.05rem;gap:6px}
+  .header-inner>.brand svg{width:24px;height:24px}
+  .header-inner>.header-actions{gap:6px}
+  .header-inner>.header-actions>.tag{display:none}
+}
+
+.program-meta{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 0;margin-bottom:24px;border-bottom:1px solid var(--line)}.program-meta details{position:relative}.program-meta summary{cursor:pointer;background:var(--surface);border-radius:30px;padding:8px 18px}.program-meta details p{position:absolute;z-index:5;min-width:220px;max-width:80vw;background:var(--raised);padding:18px;border-radius:12px;box-shadow:0 6px 20px #0005}.program-requirements li{margin-bottom:10px}.enrollment-section{margin:24px 0}.enrollment-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;background:var(--surface);padding:24px;border-radius:16px;max-width:780px;margin:24px auto}.enrollment-form h2{grid-column:1/-1;text-align:center}.enrollment-form label{display:grid;gap:7px;font-size:.9rem}.enrollment-wide{grid-column:1/-1}.enrollment-form .enrollment-consent{display:flex;align-items:flex-start;gap:10px}.enrollment-consent input{width:20px;height:20px;flex-shrink:0}.enrollment-form input,.enrollment-form select{min-width:0}.section-detail-page>.detail-image{border-radius:14px}.program-requirements{margin:24px 0}@media(max-width:500px){.enrollment-form{padding:18px;gap:14px 10px}.enrollment-form label{font-size:.75rem}.enrollment-form input,.enrollment-form select{padding:10px 8px;font-size:.85rem}.program-meta{font-size:.8rem}}
+
+/* En móvil, los campos nativos de fecha y los selectores no deben invadir otra fila. */
+.enrollment-form{align-items:start;row-gap:20px}.enrollment-form label{min-width:0}.enrollment-form input,.enrollment-form select{box-sizing:border-box;max-width:100%;width:100%;min-height:44px}.enrollment-form input[type=date]{min-width:0;appearance:none;-webkit-appearance:none;display:block}.enrollment-form .enrollment-consent input{width:20px;min-height:20px;height:20px}.enrollment-form input[type=date]::-webkit-date-and-time-value{text-align:left}@media(max-width:600px){.enrollment-form{grid-template-columns:minmax(0,1fr);row-gap:18px}.enrollment-form label{font-size:.85rem}.enrollment-form input,.enrollment-form select{font-size:16px}.enrollment-wide{grid-column:1}.enrollment-form h2{grid-column:1}}

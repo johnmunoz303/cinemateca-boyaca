@@ -1,0 +1,44 @@
+node_modules/
+.next/
+.env
+.env.local
+ACCESO_LOCAL.txt
+storage/
+*.tsbuildinfo
+
+.test-runtime/
+e2e-build/
+build-check/
+
+ACCESO_PROGRAMADOR.txt
+
+lan-preview/
+
+# Credenciales y configuración privada (solo se publica la plantilla).
+.env.*
+!.env.example
+ACCESO_*.txt
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*.json
+service-account*.json
+
+# Compilaciones y pruebas locales en cualquier workspace.
+build-*/
+payu-test-build/
+coverage/
+playwright-report/
+test-results/
+*.log
+*.sql.gz
+*.dump
+*.backup
+*.sqlite
+*.sqlite3
+
+# Archivos del sistema y empaquetados locales.
+.DS_Store
+Thumbs.db
+*.zip
