@@ -49,11 +49,3 @@ npm run build
 ```
 
 `npm run test:e2e` ejecuta pruebas con una base y archivos temporales. Algunas pruebas específicas necesitan configuración adicional; no ejecutarlas contra una base de producción.
-
-## Seguridad y GitHub
-
-Leer [SEGURIDAD_GITHUB.md](SEGURIDAD_GITHUB.md). `.gitignore` excluye credenciales, archivos de usuarios, registros, dependencias y compilaciones. `.env.example` solo contiene una plantilla sin claves reales.
-
-El modo de pago predeterminado es simulación. PayU dispone de integración de pruebas que requiere configuración. Publicar el código en GitHub no despliega la aplicación ni convierte los pagos en cobros reales.
-
-Antes de desplegar en internet se requiere HTTPS, configuración de cookies y orígenes, secretos nuevos, proveedor de correo y revisión de seguridad y rendimiento. Las comprobaciones locales no garantizan ausencia de vulnerabilidades ni tiempos de respuesta bajo carga.
