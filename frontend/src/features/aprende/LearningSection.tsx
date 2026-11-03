@@ -22,11 +22,11 @@ export default function LearningSection({ subtab, setSubtab, data, setDetail }: 
                 <div className="intro">
                   <p className="eyebrow">APRENDE Y CREA</p>
                   <h1>Programas de formación</h1>
-                  <p>Encuentra tu espacio en el mundo audiovisual.</p>
+                  <p>Ofrecemos una variedad de programas adaptados a diferentes niveles de experiencia e intereses dentro del mundo audiovisual.</p>
                 </div>
-                <div className="content-grid">
+                <div className="content-grid program-list">
                   {data.map((c) => (<article className="content-card" key={c.id}>
-                      <img src={c.poster} alt=""/>
+                      <img src={c.poster || "/posters/default.svg"} alt={"Imagen de " + c.titulo}/>
                       <div>
                         <h2>{c.titulo}</h2>
                         <p>{c.descripcion}</p>

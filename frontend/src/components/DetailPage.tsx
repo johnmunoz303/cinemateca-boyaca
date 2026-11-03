@@ -1,5 +1,6 @@
 "use client";
 import {useEffect, useRef} from "react";
+import Footer from "./Footer";
 import {ArrowLeft, Film} from "lucide-react";
 export default function DetailPage({pageKey, back, children}: {pageKey: string; back: () => void; children: React.ReactNode}) {
   const backButton = useRef<HTMLButtonElement>(null);
@@ -11,5 +12,6 @@ export default function DetailPage({pageKey, back, children}: {pageKey: string; 
       <span className="work-header-spacer" aria-hidden="true" />
     </header>
     <main className="work-page-content section-detail-page">{children}</main>
+    <Footer />
   </div>;
 }

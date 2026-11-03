@@ -1,0 +1,66 @@
+.activity-detail{width:100%;min-width:0}
+.activity-detail>h1{text-align:left;font-size:clamp(1.4rem,2.5vw,2.2rem);margin:0 0 20px}
+.activity-image{display:block;width:100%;height:clamp(240px,34vw,560px);object-fit:cover;border-radius:16px}
+.activity-meta{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:16px;align-items:center;padding:22px 0;margin-bottom:24px;border-bottom:1px solid var(--line);font-size:.9rem}
+.activity-meta strong,.activity-meta span,.activity-meta small{display:block}
+.activity-modality{text-transform:capitalize;color:var(--muted)}
+.activity-meta time{justify-self:end;text-align:right;max-width:190px;font-weight:600;font-style:italic}
+.activity-people{position:relative}
+.activity-people summary{cursor:pointer;list-style:none;background:var(--surface);border:1px solid var(--line);padding:7px 16px;border-radius:99px;white-space:nowrap}
+.activity-people summary::after{content:'⌄';margin-left:8px}
+.activity-people[open] summary::after{content:'⌃'}
+.activity-people p{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--raised);border:1px solid var(--line);padding:16px;border-radius:12px;position:absolute;top:100%;left:50%;transform:translateX(-50%);width:min(300px,75vw);z-index:10;box-shadow:0 8px 28px #0005}
+.activity-summary h2,.activity-points h2,.activity-location h2,.activity-classroom h2{font-size:1.15rem;margin-bottom:12px}
+.activity-summary p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.75;color:var(--muted);margin:0}
+.activity-points{margin:26px 0}
+.activity-points ul{padding-left:20px;color:var(--muted);line-height:1.65}
+.activity-points li{padding-left:3px;margin-bottom:12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.activity-course-facts{display:flex;flex-wrap:wrap;gap:6px 12px;margin:24px 0;color:var(--muted);font-size:.9rem}
+.activity-course-facts dt{font-weight:600}.activity-course-facts dd{margin:0 20px 0 0}
+.activity-detail>.enrollment-section{margin:28px 0 36px}
+.activity-location,.activity-classroom{margin:30px 0}
+.activity-related{padding:24px 0 40px;border-top:1px solid var(--line);margin-top:32px}
+.activity-related>.content-grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:20px}
+.activity-related .content-card>img{height:auto;aspect-ratio:4/3;object-fit:cover}
+.activity-related .content-card>div{padding:12px}
+.activity-related .content-card h3{font-size:1rem;letter-spacing:0;margin:0 0 4px}
+.event-row>div{min-width:0}.event-row h2{margin:0 0 8px}
+.event-row p{font-size:.95rem;line-height:1.55;margin:0 0 10px}
+.event-facts{margin:0;display:grid;gap:4px;font-size:.85rem;line-height:1.5}
+.event-facts>div{display:flex;align-items:baseline;gap:5px;flex-wrap:wrap}
+.event-facts dt{font-weight:700}.event-facts dd{margin:0;color:var(--muted);overflow-wrap:anywhere}
+.program-list .content-card>img{height:auto;aspect-ratio:16/9;object-fit:cover}
+.program-list .content-card>div{padding:20px}
+.program-list .content-card>div>p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.enrollment-form{background:#650d13;color:#fff;border-radius:14px;padding:22px;box-shadow:0 8px 24px #18010326;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px}
+.enrollment-form label{color:#fff;font-size:.85rem;min-width:0}
+.enrollment-form h2{color:#fff;font-size:1.15rem;margin:0 0 4px;grid-column:1/-1}
+.enrollment-form input:not([type=checkbox]),.enrollment-form select{background:#fff;color:#29262a;border:1px solid #e6dce0;border-radius:9px;min-width:0;width:100%;min-height:44px;box-sizing:border-box;font-size:16px;box-shadow:0 1px 3px #2601061a;color-scheme:light}
+.enrollment-form input::placeholder{color:#92939e;opacity:1}
+.enrollment-form input[type=checkbox]{accent-color:#8c1018;background:#fff}
+.enrollment-form .enrollment-wide{grid-column:1/-1}
+.enrollment-form .enrollment-phone{grid-column:1/-1;width:min(75%,330px)}
+.enrollment-form .enrollment-consent{font-size:.8rem;line-height:1.55;margin:4px 0 8px}
+.enrollment-form>.primary{background:#8e0d13;color:#fff;border:1px solid #9a151c;border-radius:9px;min-height:44px;box-shadow:0 3px 5px #23010455}
+.enrollment-form .error{color:#fff;background:#41080e;border-color:#e9afb3}
+.enrollment-form input:focus-visible,.enrollment-form select:focus-visible{outline:3px solid #e8a6ac;outline-offset:2px}
+@media(max-width:750px){
+ .activity-image{height:auto;aspect-ratio:3/2;border-radius:12px}
+ .activity-meta{font-size:.75rem;gap:8px;padding:18px 0;margin-bottom:20px}
+ .activity-meta time{max-width:110px}
+ .activity-people summary{font-size:.7rem;padding:7px 10px}
+ .activity-summary p,.activity-points li{font-size:.9rem;line-height:1.65}
+ .activity-related>.content-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ .activity-related .content-card>div{padding:10px 8px}
+ .activity-related .content-card h3{font-size:.9rem}
+ .event-list .event-row{display:grid;grid-template-columns:minmax(80px,32%) minmax(0,1fr);gap:12px;align-items:start;padding:0 0 20px}
+ .event-list .event-row>img{height:auto;min-height:105px;aspect-ratio:1;object-fit:cover;border-radius:12px}
+ .event-row h2{font-size:1rem}.event-row p{font-size:.8rem}
+ .event-facts{font-size:.75rem;gap:3px}
+ .program-list{grid-template-columns:minmax(0,1fr)}
+ .enrollment-form{grid-template-columns:repeat(2,minmax(0,1fr));padding:18px 14px;gap:14px 9px}
+ .enrollment-form label{font-size:.72rem}
+ .enrollment-form .enrollment-consent{font-size:.72rem}
+ .enrollment-form input:not([type=checkbox]),.enrollment-form select{padding:10px 8px}
+}
+@media(max-width:360px){.enrollment-form{grid-template-columns:minmax(0,1fr)}.enrollment-form .enrollment-phone{width:100%}}

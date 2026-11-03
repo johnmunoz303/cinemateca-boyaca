@@ -8,9 +8,10 @@ type Props = {
     setDetail: (value: Row | null) => void;
 };
 export default function EventsSection({ genre, setGenre, data, setDetail }: Props) {
+    const selected = ["presencial", "virtual", "convocatoria"].includes(genre) ? genre : "presencial";
     return (<>
             <div className="filters">
-              {["Todos", "presencial", "virtual", "convocatoria"].map((t) => (<button key={t} className={genre === t ? "selected" : ""} onClick={() => setGenre(t)}>
+              {["presencial", "virtual", "convocatoria"].map((t) => (<button key={t} className={selected === t ? "selected" : ""} onClick={() => setGenre(t)}>
                   {t === "Todos"
                 ? "Todos"
                 : t === "convocatoria"
@@ -22,16 +23,17 @@ export default function EventsSection({ genre, setGenre, data, setDetail }: Prop
             </div>
             <div className="event-list">
               {data
-            .filter((e) => genre === "Todos" || genre === e.categoria)
+            .filter((e) => selected === "convocatoria" || selected === e.categoria)
             .map((e) => (<button className="event-row" key={e.id} onClick={() => setDetail({ ...e, kind: "evento" })}>
-                    <img src={e.imagen} alt=""/>
+                    <img src={e.imagen || "/posters/default.svg"} alt={"Imagen de " + e.titulo}/>
                     <div>
                       <h2>{e.titulo}</h2>
                       <p>{e.descripcion}</p>
-                      <small>
-                        {date(e.inicio)} · {e.direccion}
-                      </small>
-                      <span className="tag">{e.categoria}</span>
+                      <dl className="event-facts">
+                        <div><dt>Categoría:</dt><dd>{e.tipo_evento || e.categoria}</dd></div>
+                        <div><dt>Fecha:</dt><dd>{date(e.inicio)}</dd></div>
+                        <div><dt>Dirección:</dt><dd>{e.direccion || "Por confirmar"}</dd></div>
+                      </dl>
                     </div>
                   </button>))}
             </div>

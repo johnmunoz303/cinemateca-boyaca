@@ -20,6 +20,9 @@ export const resourceNames: Record<string, string> = {
     reportes: "Seguimiento de videos",
 };
 const labels: Record<string, string> = {
+    modalidad: "Modalidad del programa",
+    tipo_evento: "Tipo de evento (ej. festival escolar)",
+    fases: "Fases de la competencia (una por línea)",
     requisitos: "Requisitos (uno por línea)",
     involucrados: "Involucrados: nombres y funciones (uno por línea)",
     clasificacion: "Clasificación de edad",
@@ -110,7 +113,7 @@ export function AdminField({ resource, field, editing, relations, }: {
         sala_id: "salas",
         rol_id: "roles",
     }[field as "obra_id" | "curso_id" | "sala_id" | "rol_id"];
-    const options = field === "clasificacion"
+    const options = field === "modalidad" ? ["", "presencial", "virtual", "hibrida"] : field === "clasificacion"
         ? ["Todos", "7+", "12+", "15+", "18+"]
         : field === "tipo" && resource === "obras"
             ? ["pelicula", "corto", "documental"]
@@ -154,7 +157,7 @@ export function AdminField({ resource, field, editing, relations, }: {
         required: required[resource]?.includes(field),
     };
     return (<label>
-      {resource === "funciones" && field === "descripcion" ? "Descripción breve (opcional)" : labels[field] ?? field.replaceAll("_", " ")}
+      {resource === "funciones" && field === "descripcion" ? "Descripción breve (opcional)" : field === "categoria" && resource === "cursos" ? "Nivel o categoría del programa" : field === "categoria" && resource === "eventos" ? "Modalidad o convocatoria" : labels[field] ?? field.replaceAll("_", " ")}
       {relation ? (<select {...props}>
           <option value="">Selecciona una opción</option>
           {(relations[relation] ?? []).map((r) => (<option key={r.id} value={r.id}>
@@ -165,7 +168,7 @@ export function AdminField({ resource, field, editing, relations, }: {
           <option value="true">Sí</option>
         </select>) : options ? (<select {...props}>
           {options.map((o) => (<option key={o} value={o}>
-              {o === "pelicula"
+              {o === "" ? "Por confirmar" : o === "hibrida" ? "Híbrida" : o === "presencial" ? "Presencial" : o === "virtual" ? "Virtual" : o === "pelicula"
                     ? "Película"
                     : o === "corto"
                         ? "Corto"
@@ -173,7 +176,7 @@ export function AdminField({ resource, field, editing, relations, }: {
                             ? "Documental"
                             : o}
             </option>))}
-        </select>) : ["sinopsis", "descripcion", "contenido", "horarios", "requisitos", "involucrados"].includes(field) ? (<textarea {...props}/>) : (<input {...props} type={isDate
+        </select>) : ["sinopsis", "descripcion", "contenido", "horarios", "requisitos", "involucrados", "fases"].includes(field) ? (<textarea {...props}/>) : (<input {...props} type={isDate
                 ? isTime
                     ? "datetime-local"
                     : "date"

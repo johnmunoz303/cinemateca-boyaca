@@ -1,5 +1,5 @@
 "use client";
-import EnrollmentForm from "@/features/aprende/EnrollmentForm";
+import ActivityDetail from "@/features/aprende/ActivityDetail";
 import DetailPage from "@/components/DetailPage";
 import WorkDetail from "@/features/catalogo/WorkDetail";
 import MovieCard from "@/components/MovieCard";
@@ -160,58 +160,17 @@ export default function Cinemateca() {
         w.titulo.toLowerCase().includes(query.toLowerCase()) &&
         (genre === "Todos" || w.generos.includes(genre)));
     const fullDetail = Boolean(detail && ["curso", "aula", "evento"].includes(detail.kind));
-    const detailContent = detail ? (<>{detail.kind === "funcion" ? (<Seats item={detail} done={refreshMe} flash={flash}/>) : detail.kind === "ticket" ? (<Ticket value={detail.codigo_ticket} reservationId={detail.id}/>) : (<>
-                <h1>{detail.titulo ?? detail.nombre ?? detail.municipio}</h1>
-                {(detail.poster || detail.imagen) && (<img className="detail-image" src={detail.poster ?? detail.imagen} alt=""/>)}
-                {["curso","evento"].includes(detail.kind) && <>
-                  <div className="program-meta"><span><b>Categoría</b><br />{detail.categoria}</span>{detail.involucrados && <details><summary>Involucrados</summary><p className="preserve">{detail.involucrados}</p></details>}{detail.inicio && <time>{date(detail.inicio)}</time>}</div>
-                  <h2>{detail.kind === "curso" ? "Resumen del programa" : "Resumen del evento"}</h2>
-                  <p className="detail-description">{detail.descripcion}</p>
-                  {detail.requisitos && <section className="program-requirements"><h2>Requerimientos</h2><ul>{detail.requisitos.split(/\r?\n/).filter(Boolean).map((line:string,i:number)=><li key={i}>{line}</li>)}</ul></section>}
-                </>}
-                {detail.kind === "curso" ? (<>
-                    <p>
-                      {detail.categoria} · {detail.duracion}
-                    </p>
-                    <EnrollmentForm key={"curso-"+detail.id} item={detail} user={me.user} requireLogin={requireLogin} done={refreshMe} />
-                    {(detail.direccion || detail.latitud != null) && <><h2>¿Cómo llego?</h2><Map item={detail}/></>}
-                    <h2>Aula virtual</h2>
-                    {detail.modulos.map((m: Row) => (<div className="module" key={m.id}>
-                        <p>
-                          {m.orden}. {m.titulo}
-                        </p>
-                        {m.obra_id ? (<button onClick={() => watch(m.obra_id)}>
-                            Ver lección
-                          </button>) : (<small>
-                            Material de la lección pendiente de carga.
-                          </small>)}
-                        <button onClick={async () => {
-                            if (requireLogin())
-                                try {
-                                    await api(`modulos/${m.id}/completar`, "POST", {});
-                                    await refreshMe();
-                                    flash("Avance actualizado");
-                                }
-                                catch (e) {
-                                    flash((e as Error).message);
-                                }
-                        }}>
-                          Marcar como completado
-                        </button>
-                      </div>))}
-                  </>) : (<>
-                    {detail.kind !== "evento" && <p className="detail-description">{detail.descripcion}</p>}
-                    {detail.inicio && <p>{date(detail.inicio)}</p>}
-                    {detail.fecha_evento && (<p>
-                        {date(detail.fecha_evento)} · {detail.obra_titulo}
-                      </p>)}
-                    {detail.horarios && <p>{detail.horarios}</p>}
-                    {detail.kind === "evento" && <EnrollmentForm key={"evento-"+detail.id} item={detail} user={me.user} requireLogin={requireLogin} done={refreshMe} />}
-                    {(detail.direccion || detail.latitud != null) && <><h2>¿Cómo llego?</h2><Map item={detail}/></>}
-                  </>)}
-              </>)}</>) : null;
+    const detailContent = detail ? (detail.kind === "funcion" ? <Seats item={detail} done={refreshMe} flash={flash}/> : detail.kind === "ticket" ? <Ticket value={detail.codigo_ticket} reservationId={detail.id}/> : ["curso","evento"].includes(detail.kind) ? <ActivityDetail key={detail.kind+detail.id} item={detail} user={me.user} requireLogin={requireLogin} refreshMe={refreshMe} watch={watch} flash={flash}/> : <>
+      <h1>{detail.titulo ?? detail.nombre ?? detail.municipio}</h1>
+      {(detail.poster || detail.imagen) && <img className="detail-image" src={detail.poster ?? detail.imagen} alt=""/>}
+      <p className="detail-description">{detail.descripcion}</p>
+      {detail.inicio && <p>{date(detail.inicio)}</p>}
+      {detail.fecha_evento && <p>{date(detail.fecha_evento)} · {detail.obra_titulo}</p>}
+      {detail.horarios && <p>{detail.horarios}</p>}
+      {(detail.direccion || detail.latitud != null) && <><h2>¿Cómo llego?</h2><Map item={detail}/></>}
+    </>) : null;
     return (<>
-      {detail?.kind === "obra" ? <WorkDetail work={detail} loggedIn={Boolean(me.user)} favorite={me.favorites.includes(detail.id)} saving={savingFavorites.includes(detail.id)} back={() => setDetail(null)} watch={() => watch(detail.id)} toggleFavorite={() => favorite(detail.id)} similar={cards(allWorks.filter(work => work.id !== detail.id && (work.generos ?? []).some((genre: string) => detail.generos?.includes(genre))).slice(0, 8), true)} /> : fullDetail && detail ? <DetailPage pageKey={detail.kind + "-" + detail.id} back={() => setDetail(null)}>{detailContent}<section className="work-similar"><h2>{detail.kind === "curso" ? "Otros programas" : detail.kind === "evento" ? "Otros eventos" : "Otras aulas"}</h2><div className="content-grid">{data.filter(item => item.id !== detail.id).slice(0, 4).map(item => <button className="content-card" key={item.id} onClick={async () => {try {setDetail({...item, kind:detail.kind, ...(detail.kind === "curso" ? {modulos:await api("cursos/"+item.id)} : {})})}catch(error){flash((error as Error).message)}}}><img src={item.poster || item.imagen || "/posters/default.svg"} alt="" /><div><h3>{item.titulo || item.nombre}</h3><small>{item.categoria}</small></div></button>)}</div></section></DetailPage> : <>
+      {detail?.kind === "obra" ? <WorkDetail work={detail} loggedIn={Boolean(me.user)} favorite={me.favorites.includes(detail.id)} saving={savingFavorites.includes(detail.id)} back={() => setDetail(null)} watch={() => watch(detail.id)} toggleFavorite={() => favorite(detail.id)} similar={cards(allWorks.filter(work => work.id !== detail.id && (work.generos ?? []).some((genre: string) => detail.generos?.includes(genre))).slice(0, 8), true)} /> : fullDetail && detail ? <DetailPage pageKey={detail.kind + "-" + detail.id} back={() => setDetail(null)}>{detailContent}{["curso","evento"].includes(detail.kind) && data.some(item => item.id !== detail.id) && <section className="work-similar activity-related"><h2>{detail.kind === "curso" ? "Otros programas" : detail.kind === "evento" ? "Otros eventos" : "Otras aulas"}</h2><div className="content-grid">{data.filter(item => item.id !== detail.id).slice(0, 4).map(item => <button className="content-card" key={item.id} onClick={async () => {try {setDetail({...item, kind:detail.kind, ...(detail.kind === "curso" ? {modulos:await api("cursos/"+item.id)} : {})})}catch(error){flash((error as Error).message)}}}><img src={item.poster || item.imagen || "/posters/default.svg"} alt="" /><div><h3>{item.titulo || item.nombre}</h3><small>{item.categoria}</small></div></button>)}</div></section>}</DetailPage> : <>
       <Navbar setDrawer={setDrawer} navigate={navigate} me={me} setDark={setDark} dark={dark} setAuth={setAuth} section={section}/>
       {drawer && (<NavigationMenu setDrawer={setDrawer} me={me} navigate={navigate} setAuth={setAuth}/>)}
       <main>

@@ -2,6 +2,7 @@
 import {useEffect, useRef} from "react";
 import {ArrowLeft, Film, Heart, Play} from "lucide-react";
 import WorkCredits from "./WorkCredits";
+import Footer from "@/components/Footer";
 import type {Row} from "@/lib/types";
 
 type Props = {work: Row; loggedIn: boolean; favorite: boolean; saving: boolean; back: () => void; watch: () => void; toggleFavorite: () => void; similar: React.ReactNode};
@@ -28,5 +29,6 @@ export default function WorkDetail({work, loggedIn, favorite, saving, back, watc
       <section className="work-synopsis"><h2>Sinopsis</h2><p>{work.sinopsis}</p></section>
       <section className="work-similar"><h2>Similares</h2>{similar}</section>
     </main>
+    <Footer />
   </div>;
 }

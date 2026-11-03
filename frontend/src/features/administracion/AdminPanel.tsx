@@ -31,7 +31,7 @@ const fieldMap: Record<string, string[]> = {
         "duracion",
         "poster",
         "estado",
-        "requisitos", "involucrados", "inicio", "direccion", "latitud", "longitud",
+        "requisitos", "involucrados", "inicio", "direccion", "latitud", "longitud", "modalidad",
     ],
     modulos: ["curso_id", "titulo", "ruta", "orden", "obra_id"],
     eventos: [
@@ -44,7 +44,7 @@ const fieldMap: Record<string, string[]> = {
         "longitud",
         "imagen",
         "estado",
-        "cupo", "requisitos", "involucrados",
+        "cupo", "requisitos", "involucrados", "tipo_evento", "fases",
     ],
     rodante: [
         "municipio",
@@ -132,7 +132,7 @@ export default function Admin({ flash, initialResource, programmer, }: {
         </p>)}
       {resource === "usuarios" && (<p>
           Cambiar el rol o los datos de una cuenta cierra sus sesiones
-          anteriores. Solo concede Administrador a una persona autorizada.
+          anteriores. Puedes volver a espectador si queda otro administrador activo. Al cambiar tu propia cuenta tendrás que iniciar sesión otra vez. Solo concede Administrador a una persona autorizada.
         </p>)}
       <div className="admin-tabs">
         {(programmer
@@ -412,9 +412,8 @@ export default function Admin({ flash, initialResource, programmer, }: {
                     "roles",
                     "usuarios",
                     "comentarios",
-                    "funciones",
                 ].includes(resource) && (<button onClick={async () => {
-                        if (!window.confirm("¿Eliminar este registro?"))
+                        if (!window.confirm(resource === "funciones" ? "¿Retirar esta función de la cartelera? Se cancelarán las reservas pendientes; se conservará el historial de reservas y pagos." : "¿Eliminar este registro?"))
                             return;
                         try {
                             await api(`admin/${resource}/${r.id}`, "DELETE");
@@ -424,7 +423,7 @@ export default function Admin({ flash, initialResource, programmer, }: {
                             flash((e as Error).message);
                         }
                     }}>
-                          Eliminar
+                          {resource === "funciones" ? "Eliminar de cartelera" : "Eliminar"}
                         </button>)}
                     </td>
                   </>)}

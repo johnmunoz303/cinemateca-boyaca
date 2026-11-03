@@ -133,3 +133,10 @@ ALTER TABLE cursos ADD COLUMN IF NOT EXISTS requisitos text, ADD COLUMN IF NOT E
 ALTER TABLE eventos ADD COLUMN IF NOT EXISTS requisitos text, ADD COLUMN IF NOT EXISTS involucrados text;
 ALTER TABLE inscripciones ADD COLUMN IF NOT EXISTS datos_inscripcion jsonb;
 ALTER TABLE eventos_inscripciones ADD COLUMN IF NOT EXISTS datos_inscripcion jsonb;
+
+-- Campos opcionales: conserva todos los registros y valores anteriores.
+ALTER TABLE cursos ADD COLUMN IF NOT EXISTS modalidad varchar(30);
+ALTER TABLE eventos ADD COLUMN IF NOT EXISTS tipo_evento varchar(100), ADD COLUMN IF NOT EXISTS fases text;
+
+-- Retirada de la cartelera sin borrar reservas, pagos ni tiquetes históricos.
+ALTER TABLE funciones ADD COLUMN IF NOT EXISTS eliminado_at timestamptz;

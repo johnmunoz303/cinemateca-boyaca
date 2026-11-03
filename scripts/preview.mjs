@@ -24,6 +24,8 @@ await db.exec(readFileSync('database/012_eliminar_obras.sql','utf8'));
 await db.exec(readFileSync('database/013_funciones_descripcion_imagen.sql','utf8'));
 await db.exec(readFileSync('database/014_obras_destacadas.sql','utf8'));
 await db.exec(readFileSync('database/015_formacion_inscripciones.sql','utf8'));
+await db.exec(readFileSync('database/016_presentacion_programas_eventos.sql','utf8'));
+await db.exec(readFileSync('database/017_archivar_funciones.sql','utf8'));
 const server=new PGLiteSocketServer({db,host:'127.0.0.1',port:5434,maxConnections:20});
 // Reduce la cantidad de cambios pendientes si Windows se apaga inesperadamente.
 const checkpointTimer=setInterval(()=>db.exec('CHECKPOINT').catch(error=>console.error('Checkpoint local:',error.message)),30000);
