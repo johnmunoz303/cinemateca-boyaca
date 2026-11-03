@@ -1,3 +1,4 @@
+import {limitedForm} from "@/modules/api/form-data";
 import {updateAccount} from "./user-management.service";
 import {archiveFunction} from "@/modules/taquilla/archive-function.service";
 import { ensureEnrollmentDetails } from "@/modules/cursos/enrollment.service";
@@ -97,7 +98,7 @@ export async function adminRoutes({
         ).rows,
       );
     if (parts[1] === "documento" && method === "POST") {
-      const form = await req.formData(),
+      const form = await limitedForm(req,10*1024*1024),
         file = form.get("file"),
         rid = id(form.get("id"));
       if (
@@ -124,7 +125,7 @@ export async function adminRoutes({
       return json({ message: "PDF adjuntado al documento" });
     }
     if (parts[1] === "subtitulo" && method === "POST") {
-      const form = await req.formData(),
+      const form = await limitedForm(req,1*1024*1024),
         file = form.get("file"),
         oid = id(form.get("obra_id")),
         language = text(form.get("idioma"), 50);
@@ -148,7 +149,7 @@ export async function adminRoutes({
       return json({ ok: true }, 201);
     }
     if (parts[1] === "imagen" && method === "POST") {
-      const form = await req.formData(),
+      const form = await limitedForm(req,5*1024*1024),
         file = form.get("file"),
         rid = id(form.get("id")),
         resource = String(form.get("recurso"));
@@ -248,7 +249,7 @@ export async function adminRoutes({
       return json({ ok: true });
     }
     if (parts[1] === "upload" && method === "POST") {
-      const form = await req.formData(),
+      const form = await limitedForm(req,250*1024*1024),
         file = form.get("file"),
         oid = id(form.get("obra_id"));
       if (
@@ -277,6 +278,7 @@ export async function adminRoutes({
           ],
         );
       } catch (e) {
+        await unlink(path.join(storage(), "originals", name)).catch(()=>{});
         throw e;
       }
       return json(

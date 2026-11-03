@@ -31,8 +31,8 @@ const server=new PGLiteSocketServer({db,host:'127.0.0.1',port:5434,maxConnection
 const checkpointTimer=setInterval(()=>db.exec('CHECKPOINT').catch(error=>console.error('Checkpoint local:',error.message)),30000);
 checkpointTimer.unref();
 await server.start();
-const env={...process.env,DATABASE_URL:'postgresql://postgres:postgres@127.0.0.1:5434/postgres',APP_ORIGIN:'http://localhost:3000',STORAGE_DIR:root,BACKEND_URL:'http://127.0.0.1:3003'};
-const web=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','frontend','--webpack','--hostname',process.env.PREVIEW_HOST??'127.0.0.1','--port','3000'],{env,stdio:'inherit',windowsHide:true});
+const env={...process.env,TRUST_FRONTEND_IP:'true',DATABASE_URL:'postgresql://postgres:postgres@127.0.0.1:5434/postgres',APP_ORIGIN:'http://localhost:3000',STORAGE_DIR:root,BACKEND_URL:'http://127.0.0.1:3003'};
+const web=spawn(process.execPath,['--require','./scripts/trusted-client-ip.cjs','node_modules/next/dist/bin/next','dev','frontend','--webpack','--hostname',process.env.PREVIEW_HOST??'127.0.0.1','--port','3000'],{env:{...env,SERVICE:'frontend'},stdio:'inherit',windowsHide:true});
 const api=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','backend','--webpack','--hostname','127.0.0.1','--port','3003'],{env,stdio:'inherit',windowsHide:true});
 const expiry=spawn(process.execPath,['backend/scripts/reservations.mjs'],{env,stdio:'inherit',windowsHide:true});
 const worker=spawn(process.execPath,['backend/scripts/worker.mjs'],{env:{...env,FFMPEG_BIN:ffmpeg},stdio:'inherit',windowsHide:true});

@@ -1,3 +1,4 @@
+import {resetPassword} from "./password-change.service";
 import { randomBytes } from "node:crypto";
 import { db } from "@/database/db";
 import { sendPasswordReset } from "@/modules/mail/mail.service";
@@ -18,6 +19,7 @@ import {
   digest,
 } from "@/modules/auth/security.mjs";
 import { cookie, json, type RouteContext } from "@/modules/api/http";
+const dummyPasswordHash = hashPassword(randomBytes(32).toString("hex"));
 export async function authRoutes({
   req,
   parts,
@@ -62,8 +64,8 @@ export async function authRoutes({
     );
     const u = result.rows[0];
     const valid = verifyPassword(
-      String(b.password ?? ""),
-      u?.password_hash ?? hashPassword("dummy-password-12345"),
+      String(b.password ?? "").slice(0, 129),
+      u?.password_hash ?? dummyPasswordHash,
     );
     if (!u || !valid) fail(401, "Correo o contraseña incorrectos");
     await db.query("UPDATE usuarios SET ultimo_acceso=now() WHERE id=$1", [
@@ -87,7 +89,7 @@ export async function authRoutes({
     const b = await body();
     const e = email(b.email);
     await limit("reset:" + digest(e), 3);
-    const u = (await db.query("SELECT id FROM usuarios WHERE email=$1", [e]))
+    const u = (await db.query("SELECT id FROM usuarios WHERE email=$1 AND estado", [e]))
       .rows[0];
     if (u) {
       const raw = randomBytes(32).toString("base64url");
@@ -108,34 +110,7 @@ export async function authRoutes({
         "Si el correo está registrado, recibirá instrucciones para recuperar su contraseña.",
     });
   }
-  if (route === "auth/reset" && method === "POST") {
-    const b = await body();
-    const p = passwordPolicy(b.password);
-    const c = await db.connect();
-    try {
-      await c.query("BEGIN");
-      const t = (
-        await c.query(
-          "SELECT * FROM password_tokens WHERE token_hash=$1 AND used_at IS NULL AND expires_at>now() FOR UPDATE",
-          [digest(text(b.token, 200))],
-        )
-      ).rows[0];
-      if (!t) fail(400, "Enlace inválido o vencido");
-      await c.query(
-        "UPDATE usuarios SET password_hash=$1,token_version=token_version+1 WHERE id=$2",
-        [hashPassword(p), t.usuario_id],
-      );
-      await c.query(
-        "UPDATE password_tokens SET used_at=now() WHERE token_hash=$1",
-        [t.token_hash],
-      );
-      await c.query("COMMIT");
-      return json({ ok: true });
-    } catch (e) {
-      await c.query("ROLLBACK");
-      throw e;
-    } finally {
-      c.release();
-    }
+  if(route === "auth/reset" && method === "POST"){
+    const b=await body();return json(await resetPassword(b.token,b.password));
   }
 }

@@ -1,3 +1,4 @@
+import {limitWrites} from "@/modules/auth/request-security";
 import { paymentsRoutes } from "@/modules/pagos/payments.controller";
 import { ticketingRoutes } from "@/modules/taquilla/ticketing.controller";
 import { authRoutes } from "@/modules/auth/auth.controller";
@@ -52,7 +53,7 @@ async function handle(req: NextRequest) {
     }
     if (method !== "GET") {
       checkOrigin(req);
-      await limit("write:local", 300);
+      await limitWrites(req);
     }
     const body = async () => {
       const reader = req.body?.getReader();

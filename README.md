@@ -49,3 +49,17 @@ npm run build
 ```
 
 `npm run test:e2e` ejecuta pruebas con una base y archivos temporales. Algunas pruebas específicas necesitan configuración adicional; no ejecutarlas contra una base de producción.
+
+## Recuperación por correo real
+
+El usuario solicita un enlace desde “Olvidé mi contraseña”. El mensaje aparece enviado por Cinemateca de Boyacá. El enlace vence a los 20 minutos, es de un solo uso y los demás enlaces pendientes se invalidan cuando se cambia la contraseña. El token no se devuelve públicamente en la respuesta de la API.
+
+Configurar una cuenta remitente real en el `.env` privado con `MAIL_MODE=smtp`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD` y `SMTP_FROM`. La dirección `PUBLIC_APP_URL` debe ser accesible desde el dispositivo donde se abrirá el enlace; `localhost` solo sirve en el mismo computador. Consultar al proveedor qué credencial de aplicación requiere. No publicar ni enviar contraseñas por el chat.
+
+`npm run mail:verify` verifica conexión y autenticación sin enviar mensajes. La entrega real se comprueba después solicitando una recuperación a una cuenta propia. Sin SMTP configurado, la instalación Docker de producción no envía el correo ni expone un token como alternativa.
+
+## Límites y despliegue
+
+El frontend sella la IP de su conexión antes de reenviar solicitudes al backend privado. No publicar directamente el puerto del backend mientras se confíe en esa cabecera. Si se coloca otro proxy delante, la IP observada será la de ese proxy hasta configurar una cadena de confianza explícita; Docker Desktop también puede traducir direcciones. No se aceptan las IP que el navegador declare libremente en `X-Forwarded-For`.
+
+Para producción pública se necesita HTTPS y `COOKIE_SECURE=true`, `APP_ORIGIN`/`PUBLIC_APP_URL` correctos y `ALLOW_LAN_ACCESS=false`. Los límites de recursos de Compose y del worker se pueden ajustar para el equipo. No se han cambiado secretos ni contraseñas existentes como parte de estas mejoras.

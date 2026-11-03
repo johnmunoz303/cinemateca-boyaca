@@ -12,15 +12,15 @@ export async function coursesRoutes({
   method,
   body,
 }: RouteContext) {
-  if (parts[0] === "cursos" && parts.length === 2 && method === "GET")
-    return json(
-      (
-        await db.query(
-          "SELECT * FROM modulos WHERE curso_id=$1 ORDER BY orden",
-          [id(parts[1])],
-        )
-      ).rows,
-    );
+  if(parts[0] === "cursos" && parts.length === 2 && method === "GET"){
+    const courseId=id(parts[1]), actor=await user(req,false);
+    const course=(await db.query('SELECT estado FROM cursos WHERE id=$1',[courseId])).rows[0];
+    const administrator=actor?.rol === "administrador";
+    if(!course || (!course.estado && !administrator))fail(404,"Programa no disponible");
+    const enrolled=actor && (await db.query('SELECT 1 FROM inscripciones WHERE curso_id=$1 AND usuario_id=$2',[courseId,actor.id])).rowCount;
+    const fields=administrator||enrolled?'id,curso_id,titulo,orden,obra_id,ruta':'id,curso_id,titulo,orden';
+    return json((await db.query('SELECT '+fields+' FROM modulos WHERE curso_id=$1 ORDER BY orden',[courseId])).rows);
+  }
   if (parts[0] === "cursos" && parts[2] === "inscribir" && method === "POST") {
     const u = await user(req);
     await ensureEnrollmentDetails();

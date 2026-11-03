@@ -56,6 +56,8 @@ async function tick() {
           [
             "-nostdin",
             "-y",
+            "-protocol_whitelist",
+            "file,pipe",
             "-i",
             path.join(root, "originals", video.ruta_archivo),
             "-vf",
@@ -78,7 +80,7 @@ async function tick() {
             path.join(output, `segment_${height}_%05d.ts`),
             path.join(output, `index_${height}.m3u8`),
           ],
-          { stdio: ["ignore", "ignore", "pipe"] },
+          { stdio: ["ignore", "ignore", "pipe"], windowsHide: true, timeout: 30*60*1000, killSignal: "SIGKILL" },
         );
         let error = "";
         proc.stderr.on("data", (d) => (error = (error + d).slice(-2000)));

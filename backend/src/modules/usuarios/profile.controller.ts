@@ -1,3 +1,4 @@
+import {updateProfile} from "@/modules/auth/password-change.service";
 import { db } from "@/database/db";
 import {
   fail,
@@ -41,32 +42,8 @@ export async function profileRoutes({
       reservations: reservations.rows,
     });
   }
-  if (route === "me" && method === "PATCH") {
-    const u = await user(req),
-      b = await body();
-    await db.query(
-      "UPDATE usuarios SET nombres=$1,apellidos=$2,notificaciones=$3 WHERE id=$4",
-      [
-        text(b.nombres, 100),
-        String(b.apellidos ?? "").slice(0, 100),
-        b.notificaciones !== false,
-        u.id,
-      ],
-    );
-    if (b.newPassword) {
-      const old = (
-        await db.query("SELECT password_hash FROM usuarios WHERE id=$1", [u.id])
-      ).rows[0];
-      if (!verifyPassword(String(b.currentPassword ?? ""), old.password_hash))
-        fail(400, "Contraseña actual incorrecta");
-      await db.query(
-        "UPDATE usuarios SET password_hash=$1,token_version=token_version+1 WHERE id=$2",
-        [hashPassword(passwordPolicy(b.newPassword)), u.id],
-      );
-      const r = json({ ok: true, relogin: true });
-      r.cookies.set("session", "", { ...cookie, maxAge: 0 });
-      return r;
-    }
-    return json({ ok: true });
+  if(route === "me" && method === "PATCH"){
+    const actor=await user(req), result=await updateProfile(actor.id,await body());
+    const response=json(result);if(result.relogin)response.cookies.set("session","",{...cookie,maxAge:0});return response;
   }
 }

@@ -18,8 +18,9 @@ COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/${SERVICE}/package.json ./${SERVICE}/package.json
 COPY --from=build /app/${SERVICE}/.next/static ./${SERVICE}/.next/static
 COPY --from=build /app/frontend/public ./frontend/public
+COPY scripts/trusted-client-ip.cjs ./scripts/trusted-client-ip.cjs
 ENV SERVICE=${SERVICE}
 RUN node -e "const fs=require('node:fs');for(const file of ['/app/package.json','/app/'+process.env.SERVICE+'/package.json'])JSON.parse(fs.readFileSync(file,'utf8'))"
 USER node
 EXPOSE 3000
-CMD ["sh", "-c", "HOSTNAME=0.0.0.0 PORT=3000 node ${SERVICE}/server.js"]
+CMD ["sh", "-c", "HOSTNAME=0.0.0.0 PORT=3000 node --require ./scripts/trusted-client-ip.cjs ${SERVICE}/server.js"]

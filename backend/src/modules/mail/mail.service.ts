@@ -8,9 +8,10 @@ export async function sendPasswordReset(email: string, raw: string) {
     process.env.APP_ORIGIN ??
     "http://localhost:3000";
   const link = new URL("/", origin);
-  link.searchParams.set("reset", raw);
+  // El fragmento no se envía al servidor ni a sus registros HTTP.
+  link.hash = new URLSearchParams({reset:raw}).toString();
   const message = {
-    from: process.env.SMTP_FROM,
+    from: process.env.SMTP_FROM?.includes('<') ? process.env.SMTP_FROM : {name:'Cinemateca de Boyacá',address:process.env.SMTP_FROM??''},
     to: email,
     subject: "Cinemateca de Boyacá: recuperar contraseña",
     text: `Solicitaste recuperar tu contraseña. Abre este enlace: ${link.toString()}\nVence en 20 minutos y puede usarse una sola vez. Si no solicitaste el cambio, ignora este correo.`,

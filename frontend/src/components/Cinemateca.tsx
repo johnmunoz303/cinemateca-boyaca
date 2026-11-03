@@ -49,7 +49,7 @@ export default function Cinemateca() {
     }
     useEffect(() => {
         refreshMe().catch(() => { });
-        const reset = new URLSearchParams(window.location.search).get("reset");
+        const reset = new URLSearchParams(window.location.hash.slice(1)).get("reset") || new URLSearchParams(window.location.search).get("reset");
         if (reset)
             setAuth("reset");
     }, []);

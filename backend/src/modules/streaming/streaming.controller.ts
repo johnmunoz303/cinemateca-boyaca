@@ -1,6 +1,9 @@
+import {clientIp} from "@/modules/auth/request-security";
+import {createReadStream} from "node:fs";
+import {Readable} from "node:stream";
 import { NextResponse } from "next/server";
 import { randomUUID, randomBytes } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { db } from "@/database/db";
 import {
@@ -10,6 +13,7 @@ import {
   email,
   id,
   token,
+  limit,
 } from "@/modules/auth/auth.service";
 import {
   digest,
@@ -63,7 +67,7 @@ export async function streamingRoutes({
     const u = await user(req),
       b = await body();
     const o = (
-      await db.query("SELECT * FROM obras WHERE id=$1 AND estado_publicacion", [
+      await db.query("SELECT * FROM obras WHERE id=$1 AND estado_publicacion AND eliminado_at IS NULL", [
         id(b.obra_id),
       ])
     ).rows[0];
@@ -83,7 +87,7 @@ export async function streamingRoutes({
       )
     ).rows[0];
     if (!v) fail(409, "Video aún no disponible");
-    const ip = "127.0.0.1";
+    const ip = clientIp(req);
     const device = (req.headers.get("user-agent") ?? "desconocido").slice(
       0,
       512,
@@ -96,7 +100,7 @@ export async function streamingRoutes({
           [text(b.session_id, 64), u.id, v.id],
         )
       ).rows[0];
-      if (!old || old.dispositivo !== device)
+      if (!old || old.dispositivo !== device || old.ip_usuario !== ip)
         fail(403, "Sesión de reproducción no válida");
       sid = old.id;
       code = old.codigo_rastreo;
@@ -181,7 +185,7 @@ export async function streamingRoutes({
       fail(403, "Autorización de descarga vencida");
     const s = (
       await db.query(
-        "SELECT ss.*,v.ruta_archivo,o.permitir_descarga,o.estado_publicacion,o.fecha_ini_lic,o.fecha_fin_lic,o.dominio_publico FROM sesiones_streaming ss JOIN videos v ON v.id=ss.video_id JOIN obras o ON o.id=v.obra_id WHERE ss.id=$1 AND ss.usuario_id=$2 AND ss.estado='activa'",
+        "SELECT ss.*,v.ruta_archivo,o.permitir_descarga,o.estado_publicacion,o.fecha_ini_lic,o.fecha_fin_lic,o.dominio_publico FROM sesiones_streaming ss JOIN videos v ON v.id=ss.video_id JOIN obras o ON o.id=v.obra_id WHERE ss.id=$1 AND ss.usuario_id=$2 AND ss.estado='activa' AND v.eliminado_at IS NULL AND o.eliminado_at IS NULL",
         [t.sid, u.id],
       )
     ).rows[0];
@@ -198,9 +202,10 @@ export async function streamingRoutes({
       fail(403, "Descarga no autorizada");
     if (!/^[a-f0-9-]+\.source$/.test(s.ruta_archivo))
       fail(400, "Archivo inválido");
-    const file = await readFile(
-      path.join(storage(), "originals", s.ruta_archivo),
-    );
+    await limit('download:user:'+u.id,6);
+    const filename=path.join(storage(),"originals",s.ruta_archivo);
+    const info=await stat(filename);
+    const file=Readable.toWeb(createReadStream(filename)) as ReadableStream<Uint8Array>;
     await db.query(
       "INSERT INTO descargas(sesion_id,usuario_id,video_id) VALUES($1,$2,$3)",
       [s.id, u.id, s.video_id],
@@ -209,6 +214,7 @@ export async function streamingRoutes({
       headers: {
         "Content-Type": "application/octet-stream",
         "Content-Disposition": "attachment; filename=cinemateca-video.mp4",
+        "Content-Length": String(info.size),
         "Cache-Control": "no-store",
       },
     });
@@ -235,7 +241,7 @@ export async function streamingRoutes({
       t.uid !== u.id ||
       t.vid !== id(parts[2]) ||
       t.device !== digest(device) ||
-      t.ip !== "127.0.0.1"
+      t.ip !== clientIp(req)
     )
       fail(403, "Token de reproducción inválido o vencido");
     const s = (

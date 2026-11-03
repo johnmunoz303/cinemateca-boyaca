@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Film, X } from "lucide-react";
 import { api } from "@/lib/client";
 import type { Row } from "@/lib/types";
@@ -9,6 +9,8 @@ export default function Auth({ mode, change, done, }: {
     done: () => void;
 }) {
     const [error, setError] = useState(""), [busy, setBusy] = useState(false), [message, setMessage] = useState("");
+    const [resetToken,setResetToken]=useState('');
+    useEffect(()=>{if(mode==='reset'){const value=new URLSearchParams(location.hash.slice(1)).get('reset')||new URLSearchParams(location.search).get('reset');if(value){setResetToken(value);history.replaceState(null,'',location.pathname)}}},[mode]);
     return (<div className="modal-backdrop">
       <section className="modal auth" role="dialog" aria-modal="true" aria-label="Acceso">
         <button className="close" aria-label="Cerrar" onClick={() => change(null)}>
@@ -30,13 +32,14 @@ export default function Auth({ mode, change, done, }: {
             setError("");
             const f = new FormData(e.currentTarget), b: Row = Object.fromEntries(f);
             if (mode === "reset")
-                b.token = new URLSearchParams(location.search).get("reset");
+                b.token = resetToken;
             try {
                 const r = await api("auth/" + mode, "POST", b);
                 if (mode === "forgot") {
                     setMessage(r.message);
                 }
                 else if (mode === "reset") {
+                    setResetToken('');
                     history.replaceState(null, "", "/");
                     change("login");
                     setMessage("Contraseña actualizada");

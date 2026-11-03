@@ -10,7 +10,8 @@
     "worker": "node backend/scripts/worker.mjs",
     "test": "node --test tests/*.test.mjs",
     "preview": "node scripts/preview.mjs",
-    "test:e2e": "node tests/e2e-local.mjs"
+    "test:e2e": "node tests/e2e-local.mjs",
+    "mail:verify": "node scripts/verify-mail.mjs"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.0",
