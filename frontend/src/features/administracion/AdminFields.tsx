@@ -1,6 +1,7 @@
 "use client";
 type Row = Record<string, any>;
 export const resourceNames: Record<string, string> = {
+    equipo: "Nuestro equipo",
     inscripciones: "Inscripciones",
     entrada: "Control de entrada",
     generos: "Géneros",
@@ -58,6 +59,8 @@ const labels: Record<string, string> = {
     longitud: "Longitud (opcional)",
     cupo: "Cupos (opcional)",
     precio: "Precio simulado en pesos",
+    cargo: "Cargo o función",
+    biografia: "Biografía o presentación",
     nombre: "Nombre",
     horarios: "Horarios",
     ruta: "Enlace al material (opcional)",
@@ -71,6 +74,7 @@ const labels: Record<string, string> = {
     pais: "País",
 };
 export const defaults: Record<string, Row> = {
+    equipo: {orden:1,estado:false,demostracion:false},
     obras: {
         tipo: "pelicula",
         estado_publicacion: false,
@@ -89,6 +93,7 @@ export const defaults: Record<string, Row> = {
     legal: { publicado: false },
 };
 const required: Record<string, string[]> = {
+    equipo: ["nombre", "cargo", "biografia", "orden"],
     obras: ["titulo", "sinopsis", "duracion", "tipo"],
     cursos: ["titulo", "descripcion"],
     modulos: ["titulo", "curso_id"],
@@ -130,9 +135,9 @@ export function AdminField({ resource, field, editing, relations, }: {
         "estado_publicacion",
         "dominio_publico",
         "permitir_descarga",
-        "publicado",
+        "publicado", "demostracion",
     ].includes(field) ||
-        (field === "estado" && ["cursos", "usuarios"].includes(resource));
+        (field === "estado" && ["cursos", "usuarios", "equipo"].includes(resource));
     const isDate = [
         "inicio",
         "fecha_evento",
@@ -157,7 +162,7 @@ export function AdminField({ resource, field, editing, relations, }: {
         required: required[resource]?.includes(field),
     };
     return (<label>
-      {resource === "funciones" && field === "descripcion" ? "Descripción breve (opcional)" : field === "categoria" && resource === "cursos" ? "Nivel o categoría del programa" : field === "categoria" && resource === "eventos" ? "Modalidad o convocatoria" : labels[field] ?? field.replaceAll("_", " ")}
+      {resource === "equipo" && field === "orden" ? "Orden de aparición" : resource === "equipo" && field === "estado" ? "Mostrar en Nuestro equipo" : resource === "equipo" && field === "demostracion" ? "Perfil ilustrativo de demostración" : resource === "funciones" && field === "descripcion" ? "Descripción breve (opcional)" : field === "categoria" && resource === "cursos" ? "Nivel o categoría del programa" : field === "categoria" && resource === "eventos" ? "Modalidad o convocatoria" : labels[field] ?? field.replaceAll("_", " ")}
       {relation ? (<select {...props}>
           <option value="">Selecciona una opción</option>
           {(relations[relation] ?? []).map((r) => (<option key={r.id} value={r.id}>
@@ -176,7 +181,7 @@ export function AdminField({ resource, field, editing, relations, }: {
                             ? "Documental"
                             : o}
             </option>))}
-        </select>) : ["sinopsis", "descripcion", "contenido", "horarios", "requisitos", "involucrados", "fases"].includes(field) ? (<textarea {...props}/>) : (<input {...props} type={isDate
+        </select>) : ["sinopsis", "descripcion", "contenido", "horarios", "requisitos", "involucrados", "fases", "biografia"].includes(field) ? (<textarea {...props}/>) : (<input {...props} type={isDate
                 ? isTime
                     ? "datetime-local"
                     : "date"

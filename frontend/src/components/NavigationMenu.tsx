@@ -1,4 +1,5 @@
 "use client";
+import CinematecaBrand from "./CinematecaBrand";
 import { X } from "lucide-react";
 import type { Row } from "@/lib/types";
 type Props = {
@@ -13,7 +14,7 @@ export default function NavigationMenu({ setDrawer, me, navigate, setAuth }: Pro
             <button aria-label="Cerrar menú" onClick={() => setDrawer(false)}>
               <X />
             </button>
-            <h2>Cinemateca departamental de Boyacá</h2>
+            <h2><button type="button" className="drawer-home" onClick={() => navigate("Películas")} aria-label="Cinemateca — ir al inicio"><CinematecaBrand /></button></h2>
             {[
             "Cinemateca Rodante",
             "Cinemateca Física",

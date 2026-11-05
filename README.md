@@ -2,7 +2,11 @@
 
 Aplicación con frontend y backend separados en Next.js y TypeScript, PostgreSQL, Tailwind CSS y Docker Compose.
 
-## Ejecutar una instalación nueva
+## Entrega para el ingeniero
+
+Si el repositorio incluye la carpeta de entrega, sigue la [guía de ejecución](docs/GUIA_EJECUCION_INGENIERO.md) para iniciar con el catálogo y los videos incluidos.
+
+## Ejecutar una instalación nueva para desarrollo
 
 Requisitos: Node.js 22 y Docker Desktop con contenedores Linux.
 
@@ -38,7 +42,7 @@ Para detenerlo conservando los contenedores: `docker compose -p cinemateca stop`
 - `scripts`: configuración y ejecución local.
 - `tests`: comprobaciones automáticas.
 
-El catálogo inicia sin películas de ejemplo. Las cuentas iniciales se generan con la configuración privada. Las imágenes y videos cargados, usuarios, pagos e inscripciones no forman parte del repositorio: persisten en los volúmenes Docker. No ejecutar `docker compose down -v` si se desean conservar esos datos.
+Una instalación nueva para desarrollo inicia sin películas de ejemplo. Las cuentas iniciales se generan con la configuración privada. Los datos de cada instalación persisten en los volúmenes Docker. La entrega privada incluye una copia del catálogo y los multimedia. No ejecutar `docker compose down -v` si se desean conservar esos datos.
 
 ## Verificación local
 

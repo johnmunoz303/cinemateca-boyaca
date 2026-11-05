@@ -14,7 +14,7 @@ const socket=new PGLiteSocketServer({db:memory,host:'127.0.0.1',port:5435,maxCon
 const secret=()=>randomBytes(32).toString('hex');
 const env={...process.env,DATABASE_URL:'postgresql://postgres:postgres@127.0.0.1:5435/postgres',APP_ORIGIN:'http://localhost:3001',JWT_SECRET:secret(),STREAM_SECRET:secret(),TICKET_SECRET:secret(),ADMIN_EMAIL:'admin@testing.local',ADMIN_PASSWORD:secret(),PAYMENT_MODE:'simulation',STORAGE_DIR:root,FFMPEG_BIN:ffmpeg,NEXT_BUILD_DIR:'e2e-build',BACKEND_URL:'http://127.0.0.1:3004',COOKIE_SECURE:'false'};
 Object.assign(process.env,env);
-const log=openSync(path.join(root,'server.log'),'w');
+const log=openSync(path.join(root,'server-'+Date.now()+'.log'),'w');
 const web=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','frontend','--webpack','--hostname','127.0.0.1','--port','3001'],{env,windowsHide:true,stdio:['ignore',log,log]});
 const api=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','backend','--webpack','--hostname','127.0.0.1','--port','3004'],{env,windowsHide:true,stdio:['ignore',log,log]});
 let worker;const db=new pg.Pool({connectionString:env.DATABASE_URL});

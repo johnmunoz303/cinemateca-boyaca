@@ -1,0 +1,29 @@
+services:
+  db:
+    volumes:
+      - ./entrega/base:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+  storage-init:
+    volumes:
+      - ./entrega:/entrega:ro
+    command:
+      - sh
+      - -ec
+      - |
+        if [ ! -f /data/.entrega-importada ]; then
+          set -o pipefail
+          cat /entrega/multimedia.tar.gz.part* | tar -xzf - -C /data
+          chown -R 1000:1000 /data
+          touch /data/.entrega-importada
+        fi
+  frontend:
+    ports: !override ["127.0.0.1:${FRONTEND_PORT:-3000}:3000"]
+  backend:
+    environment:
+      APP_ORIGIN: ${APP_ORIGIN:-http://localhost:3000}
+    env_file: !override [.env.entrega]
+  worker:
+    env_file: !override [.env.entrega]
+  reservas-worker:
+    env_file: !override [.env.entrega]

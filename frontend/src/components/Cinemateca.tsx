@@ -25,7 +25,7 @@ import { useEffect, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
 import { resourceNames } from "../features/administracion/AdminFields";
 export default function Cinemateca() {
-    const [section, setSection] = useState("Películas"), [drawer, setDrawer] = useState(false), [dark, setDark] = useState(true), [data, setData] = useState<Row[]>([]), [allWorks, setAllWorks] = useState<Row[]>([]), [me, setMe] = useState<Row>({
+    const [section, setSection] = useState("Películas"), [drawer, setDrawer] = useState(false), [data, setData] = useState<Row[]>([]), [allWorks, setAllWorks] = useState<Row[]>([]), [me, setMe] = useState<Row>({
         user: null,
         favorites: [],
         courses: [],
@@ -54,8 +54,8 @@ export default function Cinemateca() {
             setAuth("reset");
     }, []);
     useEffect(() => {
-        document.documentElement.dataset.theme = dark ? "dark" : "light";
-    }, [dark]);
+        document.documentElement.dataset.theme = "dark";
+    }, []);
     useEffect(() => {
         let active = true;
         setLoading(true);
@@ -93,6 +93,7 @@ export default function Cinemateca() {
         };
     }, [section]);
     const navigate = (name: string) => {
+        setDetail(null);
         setSection(name);
         setDrawer(false);
         setQuery("");
@@ -145,7 +146,7 @@ export default function Cinemateca() {
             return;
         try {
             const info = await api("streaming/token", "POST", { obra_id: oid });
-            setPlaying({ ...info, obra_id: oid });
+            setPlaying({ ...info, obra_id: oid, titulo: detail?.kind === "obra" && detail.id === oid ? detail.titulo : allWorks.find(w => w.id === oid)?.titulo });
         }
         catch (e) {
             flash((e as Error).message);
@@ -170,8 +171,8 @@ export default function Cinemateca() {
       {(detail.direccion || detail.latitud != null) && <><h2>¿Cómo llego?</h2><Map item={detail}/></>}
     </>) : null;
     return (<>
-      {detail?.kind === "obra" ? <WorkDetail work={detail} loggedIn={Boolean(me.user)} favorite={me.favorites.includes(detail.id)} saving={savingFavorites.includes(detail.id)} back={() => setDetail(null)} watch={() => watch(detail.id)} toggleFavorite={() => favorite(detail.id)} similar={cards(allWorks.filter(work => work.id !== detail.id && (work.generos ?? []).some((genre: string) => detail.generos?.includes(genre))).slice(0, 8), true)} /> : fullDetail && detail ? <DetailPage pageKey={detail.kind + "-" + detail.id} back={() => setDetail(null)}>{detailContent}{["curso","evento"].includes(detail.kind) && data.some(item => item.id !== detail.id) && <section className="work-similar activity-related"><h2>{detail.kind === "curso" ? "Otros programas" : detail.kind === "evento" ? "Otros eventos" : "Otras aulas"}</h2><div className="content-grid">{data.filter(item => item.id !== detail.id).slice(0, 4).map(item => <button className="content-card" key={item.id} onClick={async () => {try {setDetail({...item, kind:detail.kind, ...(detail.kind === "curso" ? {modulos:await api("cursos/"+item.id)} : {})})}catch(error){flash((error as Error).message)}}}><img src={item.poster || item.imagen || "/posters/default.svg"} alt="" /><div><h3>{item.titulo || item.nombre}</h3><small>{item.categoria}</small></div></button>)}</div></section>}</DetailPage> : <>
-      <Navbar setDrawer={setDrawer} navigate={navigate} me={me} setDark={setDark} dark={dark} setAuth={setAuth} section={section}/>
+      {detail?.kind === "obra" ? <WorkDetail work={detail} loggedIn={Boolean(me.user)} favorite={me.favorites.includes(detail.id)} saving={savingFavorites.includes(detail.id)} back={() => setDetail(null)} home={() => navigate("Películas")} watch={() => watch(detail.id)} toggleFavorite={() => favorite(detail.id)} similar={cards(allWorks.filter(work => work.id !== detail.id && (work.generos ?? []).some((genre: string) => detail.generos?.includes(genre))).slice(0, 8), true)} /> : fullDetail && detail ? <DetailPage home={() => navigate("Películas")} pageKey={detail.kind + "-" + detail.id} back={() => setDetail(null)}>{detailContent}{["curso","evento"].includes(detail.kind) && data.some(item => item.id !== detail.id) && <section className="work-similar activity-related"><h2>{detail.kind === "curso" ? "Otros programas" : detail.kind === "evento" ? "Otros eventos" : "Otras aulas"}</h2><div className="content-grid">{data.filter(item => item.id !== detail.id).slice(0, 4).map(item => <button className="content-card" key={item.id} onClick={async () => {try {setDetail({...item, kind:detail.kind, ...(detail.kind === "curso" ? {modulos:await api("cursos/"+item.id)} : {})})}catch(error){flash((error as Error).message)}}}><img src={item.poster || item.imagen || "/posters/default.svg"} alt="" /><div><h3>{item.titulo || item.nombre}</h3><small>{item.categoria}</small></div></button>)}</div></section>}</DetailPage> : <>
+      <Navbar setDrawer={setDrawer} navigate={navigate} me={me} setAuth={setAuth} section={section}/>
       {drawer && (<NavigationMenu setDrawer={setDrawer} me={me} navigate={navigate} setAuth={setAuth}/>)}
       <main>
         {me.user?.rol === "programador" && section !== "Administración" && (<div className="route-card actions">
@@ -183,7 +184,7 @@ export default function Cinemateca() {
         {me.user?.rol === "administrador" && section !== "Administración" && (<div className="route-card actions">
             <b>Modo administrador</b>
             {(section === "Aprende"
-                ? ["cursos", "aulas", "modulos"]
+                ? ["cursos", "aulas"]
                 : section === "Eventos"
                     ? ["eventos"]
                     : section === "Cinemateca Rodante"
@@ -222,9 +223,11 @@ export default function Cinemateca() {
             ["administrador", "programador"].includes(me.user?.rol) && (<Admin key={adminResource} initialResource={me.user.rol === "programador" ? "funciones" : adminResource} programmer={me.user.rol === "programador"} flash={flash}/>)}
       </main>
       <Footer />
-      <button className="floating-search" aria-label="Buscar contenido" onClick={() => navigate("Buscar")}>
-        <Search />
-      </button>
+      {section !== "Mi perfil" && (
+        <button className="floating-search" aria-label="Buscar contenido" onClick={() => navigate("Buscar")}>
+          <Search />
+        </button>
+      )}
       </>}
       {notice && (<div className="toast" role="status">
           {notice}

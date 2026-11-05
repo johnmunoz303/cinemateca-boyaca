@@ -1,18 +1,19 @@
 "use client";
 import {useEffect, useRef} from "react";
-import {ArrowLeft, Film, Heart, Play} from "lucide-react";
+import {ArrowLeft, Heart, Play} from "lucide-react";
+import CinematecaBrand from "@/components/CinematecaBrand";
 import WorkCredits from "./WorkCredits";
 import Footer from "@/components/Footer";
 import type {Row} from "@/lib/types";
 
-type Props = {work: Row; loggedIn: boolean; favorite: boolean; saving: boolean; back: () => void; watch: () => void; toggleFavorite: () => void; similar: React.ReactNode};
-export default function WorkDetail({work, loggedIn, favorite, saving, back, watch, toggleFavorite, similar}: Props) {
+type Props = {work: Row; loggedIn: boolean; favorite: boolean; saving: boolean; back: () => void; home: () => void; watch: () => void; toggleFavorite: () => void; similar: React.ReactNode};
+export default function WorkDetail({work, loggedIn, favorite, saving, back, home, watch, toggleFavorite, similar}: Props) {
   const title = useRef<HTMLHeadingElement>(null);
   useEffect(() => {window.scrollTo(0, 0); title.current?.focus({preventScroll:true});}, [work.id]);
   return <div className="work-page">
     <header className="work-page-header">
       <button type="button" aria-label="Volver al catálogo" onClick={back}><ArrowLeft /></button>
-      <span><Film aria-hidden="true" /> Cinemateca</span>
+      <button className="work-home" type="button" onClick={home} aria-label="Ir al inicio"><CinematecaBrand /></button>
       <span className="work-header-spacer" aria-hidden="true" />
     </header>
     <main className="work-page-content">

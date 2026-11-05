@@ -10,6 +10,7 @@ import RoomEditor from "@/features/administracion/RoomEditor";
 import VideoManager from "@/features/administracion/VideoManager";
 import { AdminField, resourceNames, defaults } from "@/features/administracion/AdminFields";
 const fieldMap: Record<string, string[]> = {
+    equipo: ["nombre", "cargo", "biografia", "orden", "estado", "demostracion"],
     generos: ["nombre"],
     obras: [
         "titulo",
@@ -33,7 +34,6 @@ const fieldMap: Record<string, string[]> = {
         "estado",
         "requisitos", "involucrados", "inicio", "direccion", "latitud", "longitud", "modalidad",
     ],
-    modulos: ["curso_id", "titulo", "ruta", "orden", "obra_id"],
     eventos: [
         "titulo",
         "descripcion",
@@ -93,8 +93,9 @@ export default function Admin({ flash, initialResource, programmer, }: {
     initialResource: string;
     programmer: boolean;
 }) {
-    const [resource, setResource] = useState(initialResource), [relations, setRelations] = useState<Record<string, Row[]>>({}), [rows, setRows] = useState<Row[]>([]), [editing, setEditing] = useState<Row | null>(null), [busy, setBusy] = useState(false), [formError, setFormError] = useState("");
+    const [resource, setResource] = useState(initialResource === "modulos" ? "cursos" : initialResource), [relations, setRelations] = useState<Record<string, Row[]>>({}), [rows, setRows] = useState<Row[]>([]), [editing, setEditing] = useState<Row | null>(null), [busy, setBusy] = useState(false), [formError, setFormError] = useState("");
     async function load() {
+        if (resource === "entrada") { setRows([]); return; }
         try {
             setRows(await api("admin/" + (resource === "entrada" ? "reportes" : resource)));
         }
@@ -122,7 +123,7 @@ export default function Admin({ flash, initialResource, programmer, }: {
       <h1>Administración</h1>
       <p>
         {programmer
-            ? "Crea una función seleccionando la obra, la sala, la fecha y hora y el precio simulado. Con estado publicada aparecerá en Cinemateca Física para reservar asientos."
+            ? "Gestiona funciones y cartelera o abre Control de entrada para validar tiquetes y registrar ingresos."
             : "Crea o edita el contenido de cada sección. Para publicar un video, primero crea la obra, carga el archivo y espera su procesamiento; luego activa su publicación."}
       </p>
       {resource === "roles" && (<p>
@@ -136,7 +137,7 @@ export default function Admin({ flash, initialResource, programmer, }: {
         </p>)}
       <div className="admin-tabs">
         {(programmer
-            ? ["funciones"]
+            ? ["funciones", "entrada"]
             : [...Object.keys(fieldMap).filter(key => key !== "comentarios"), "reportes", "entrada", "inscripciones"]).map((t) => (<button key={t} className={resource === t ? "selected" : ""} onClick={() => setResource(t)}>
             {resourceNames[t] ?? t}
           </button>))}
@@ -147,7 +148,7 @@ export default function Admin({ flash, initialResource, programmer, }: {
             }}>
           Crear {resourceNames[resource]}
         </button>)}
-      {["obras", "cursos", "eventos", "aulas"].includes(resource) &&
+      {["obras", "cursos", "eventos", "aulas", "equipo"].includes(resource) &&
             rows.length > 0 && (<form className="upload route-card" onSubmit={async (e) => {
                 e.preventDefault();
                 try {
@@ -158,7 +159,7 @@ export default function Admin({ flash, initialResource, programmer, }: {
                     flash((err as Error).message);
                 }
             }}>
-            <h2>Cargar imagen</h2>
+          <h2>{resource === "equipo" ? "Cambiar fotografía del perfil" : "Cargar imagen"}</h2>
             <input type="hidden" name="recurso" value={resource}/>
             <label>
               Registro
@@ -234,10 +235,10 @@ export default function Admin({ flash, initialResource, programmer, }: {
                     }));
                 }
                 try {
-                    const imageFile = ["funciones","cursos","eventos"].includes(resource) ? f.get("function_image") : null;
+                    const imageFile = ["funciones","cursos","eventos","equipo"].includes(resource) ? f.get("function_image") : null;
                     if(imageFile instanceof File && imageFile.size > 5 * 1024 * 1024)throw Error("La imagen debe pesar como máximo 5 MB");
                     const result = await api("admin/" + resource + (editing.id ? "/" + editing.id : ""), editing.id ? "PATCH" : "POST", b);
-                    if(["funciones","cursos","eventos"].includes(resource) && imageFile instanceof File && imageFile.size > 0){
+                    if(["funciones","cursos","eventos","equipo"].includes(resource) && imageFile instanceof File && imageFile.size > 0){
                         const imageForm = new FormData(); imageForm.set("recurso",resource); imageForm.set("id",String(result.id)); imageForm.set("file",imageFile);
                         try { await api("admin/imagen","POST",imageForm); }
                         catch(error){setEditing(result);load();throw Error("El registro se guardó, pero la imagen no: "+(error as Error).message);}
@@ -269,8 +270,8 @@ export default function Admin({ flash, initialResource, programmer, }: {
                 .filter((k) => !["poster", "imagen"].includes(k))
                 .map((k) => (<AdminField key={resource + "-" + (editing.id ?? "new") + "-" + k} resource={resource} field={k} editing={editing} relations={relations}/>))}
           {resource === "obras" && (<WorkMetadata key={editing.id ?? "new"} editing={editing} relations={relations}/>)}
-          {["funciones","cursos","eventos"].includes(resource) && <label>Imagen o cartel (opcional, máximo 5 MB)
-            {(editing.imagen || editing.poster) && <img className="function-poster-preview" src={editing.imagen || editing.poster} alt="Cartel actual de la función" />}
+          {["funciones","cursos","eventos","equipo"].includes(resource) && <label>{resource === "equipo" ? "Fotografía del perfil (opcional, máximo 5 MB)" : "Imagen o cartel (opcional, máximo 5 MB)"}
+            {(editing.foto || editing.imagen || editing.poster) && <img className="function-poster-preview" src={editing.foto || editing.imagen || editing.poster} alt="Imagen actual del registro" />}
             <input key={editing.id ?? "new"} type="file" name="function_image" accept="image/png,image/jpeg,image/webp" />
             <small>PNG, JPEG o WebP. Deja este campo vacío para conservar la imagen actual.</small>
           </label>}
@@ -377,7 +378,7 @@ export default function Admin({ flash, initialResource, programmer, }: {
                     ? r.estado_publicacion
                         ? "Publicado"
                         : "Borrador"
-                    : String(r.estado ?? "—")}
+                    : resource === "equipo" ? (r.estado ? "Publicado" : "Oculto") : String(r.estado ?? "—")}
                     </td>
                     {resource === "obras" && (<td>
                         <strong>

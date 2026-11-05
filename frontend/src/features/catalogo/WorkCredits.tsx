@@ -48,6 +48,7 @@ export default function WorkCredits({work}: {work: Row}) {
           <dt>Año</dt><dd>{work.anio || "No registrado"}</dd>
           <dt>Duración</dt><dd>{work.duracion ? `${work.duracion} min` : "Por confirmar"}</dd>
           <dt>Género</dt><dd>{genres || "No registrado"}</dd>
+          <dt>{directors.length > 1 ? "Directores" : "Director/a"}</dt><dd>{directors.length ? directors.map(person => person.nombre).join(", ") : "No registrado"}</dd>
           <dt>Lugar</dt><dd>{work.lugar || work.pais || "No registrado"}</dd>
           {others.length > 0 && <><dt>Elenco y equipo</dt><dd>{others.map((person, index) => <span className="credit-person" key={index}>{person.nombre}{person.rol ? ` · ${person.rol}` : ""}</span>)}</dd></>}
         </dl>

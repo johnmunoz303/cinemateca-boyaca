@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { api, date, currency } from "@/lib/client";
 import type { Row } from "@/lib/types";
+import TicketCode from "./TicketCode";
 export default function Seats({ item, done, flash, }: {
     item: Row;
     done: () => void;
@@ -44,6 +45,7 @@ export default function Seats({ item, done, flash, }: {
         <h1>Reserva confirmada</h1>
         <p>Pago de pruebas · sin cobro real</p>
         <img src={ticket.qr} alt="Código QR del tiquete" className="qr"/>
+        <TicketCode value={ticket.ticket}/>
         <a className="primary" href={"/api/v1/taquilla/ticket/" + reserve?.id + "/pdf"}>
           Descargar tiquete PDF
         </a>

@@ -77,3 +77,62 @@ test('Correo incluye enlace temporal con token en fragmento y nombre Cinemateca'
  let message;const mail=load('backend/src/modules/mail/mail.service.ts',{nodemailer:{createTransport:()=>({sendMail:async value=>{message=value}})}},{NODE_ENV:'production',MAIL_MODE:'smtp',SMTP_HOST:'smtp.example.test',SMTP_FROM:'cinemateca@example.test',SMTP_USER:'sender',SMTP_PASSWORD:'synthetic-only',PUBLIC_APP_URL:'https://cinemateca.example.test'});
  await mail.sendPasswordReset('reader@example.test','synthetic-reset-token');assert.equal(message.from.name,'Cinemateca de Boyacá');const link=new URL(message.text.match(/https:\/\/\S+/)[0]);assert.equal(link.search,'');assert.ok(link.hash.includes('synthetic-reset-token'));assert.equal(message.to,'reader@example.test');
 });
+
+test('Cancelar inscripción afecta solo al titular, libera cupo y permite inscribirse otra vez',async()=>{
+ const {memory,db}=await setup();try{
+  await db.query("INSERT INTO usuarios(nombres,email,password_hash,rol_id) VALUES('A','cancel-a@example.test','hash',1),('B','cancel-b@example.test','hash',1)");
+  const course=(await db.query("INSERT INTO cursos(titulo,descripcion) VALUES('Programa','Descripción de prueba') RETURNING id")).rows[0].id;
+  const module=(await db.query("INSERT INTO modulos(curso_id,titulo,orden) VALUES($1,'Lección',1) RETURNING id",[course])).rows[0].id;
+  const event=(await db.query("INSERT INTO eventos(titulo,descripcion,inicio) VALUES('Evento','Descripción de prueba',now()+interval '1 day') RETURNING id")).rows[0].id;
+  await db.query('INSERT INTO inscripciones(usuario_id,curso_id) VALUES(1,$1),(2,$1)',[course]);
+  await db.query('INSERT INTO progreso_modulos(usuario_id,modulo_id) VALUES(1,$1),(2,$1)',[module]);
+  await db.query('INSERT INTO eventos_inscripciones(usuario_id,evento_id) VALUES(1,$1),(2,$1)',[event]);
+  const {cancelEnrollment}=load('backend/src/modules/cursos/cancel-enrollment.service.ts',{'@/database/db':{db}});
+  await cancelEnrollment(1,event,'evento');await cancelEnrollment(1,event,'evento');
+  assert.equal((await db.query('SELECT * FROM eventos_inscripciones WHERE usuario_id=1')).rows.length,0);
+  assert.equal((await db.query('SELECT * FROM eventos_inscripciones WHERE usuario_id=2')).rows.length,1);
+  await cancelEnrollment(1,course,'curso');
+  assert.equal((await db.query('SELECT * FROM inscripciones WHERE usuario_id=1')).rows.length,0);
+  assert.equal((await db.query('SELECT * FROM progreso_modulos WHERE usuario_id=1')).rows.length,0);
+  assert.equal((await db.query('SELECT * FROM inscripciones WHERE usuario_id=2')).rows.length,1);
+  assert.equal((await db.query('SELECT * FROM progreso_modulos WHERE usuario_id=2')).rows.length,1);
+  await db.query('INSERT INTO eventos_inscripciones(usuario_id,evento_id) VALUES(1,$1)',[event]);
+  await db.query('INSERT INTO inscripciones(usuario_id,curso_id) VALUES(1,$1)',[course]);
+  assert.equal((await db.query('SELECT progreso_porcentaje FROM inscripciones WHERE usuario_id=1')).rows[0].progreso_porcentaje,0);
+ }finally{await memory.close()}
+});
+
+test('Equipo: migración repetible conserva ediciones y no reaparece un perfil retirado',async()=>{
+ const memory=new PGlite();try{
+  const sql=readFileSync(new URL('../database/018_equipo.sql',import.meta.url),'utf8');await memory.exec(sql);
+  assert.equal((await memory.query('SELECT count(*) n FROM equipo_miembros')).rows[0].n,3);
+  await memory.query("UPDATE equipo_miembros SET nombre='Perfil editado',eliminado_at=now(),estado=false WHERE demo_clave='ejemplo-valentina'");
+  await memory.exec(sql);const rows=(await memory.query("SELECT * FROM equipo_miembros WHERE demo_clave='ejemplo-valentina'")).rows;
+  assert.equal(rows.length,1);assert.equal(rows[0].nombre,'Perfil editado');assert.ok(rows[0].eliminado_at);
+ }finally{await memory.close()}
+});
+
+test('Equipo: solo administrador modifica, publicación y orden públicos, edición y retiro persistentes',async()=>{
+ const memory=new PGlite();try{
+  const query=async(...args)=>{if(args.length===1&&args[0].includes('CREATE TABLE IF NOT EXISTS equipo_miembros')){await memory.exec(args[0]);return {rows:[],rowCount:0}}const r=await memory.query(...args);return {...r,rowCount:r.rows.length||r.affectedRows||0}};
+  const db={query};const schema=load('backend/src/modules/equipo/team-schema.ts',{'@/database/db':{db}});
+  const {teamRoutes}=load('backend/src/modules/equipo/team.controller.ts',{'@/database/db':{db},'./team-schema':schema,'@/modules/api/http':{json:(data,status=200)=>({data,status})},'@/modules/auth/auth.service':{...auth,admin:async req=>{if(!req.actor)fail(401,'Inicia sesión');if(req.actor.rol!=='administrador')fail(403,'Sin permisos');return req.actor}}});
+  const call=(route,method='GET',data,actor)=>teamRoutes({req:{actor},parts:route.split('/'),route,method,body:async()=>data});
+  await assert.rejects(()=>call('admin/equipo','POST',{}),e=>e.status===401);
+  await assert.rejects(()=>call('admin/equipo','GET',undefined,{rol:'espectador'}),e=>e.status===403);
+  await assert.rejects(()=>call('admin/equipo','POST',{}, {rol:'programador'}),e=>e.status===403);
+  const admin={rol:'administrador'},body={nombre:'Perfil propio',cargo:'Docente',biografia:'Biografía para prueba aislada',orden:4,estado:false,demostracion:false,id:999,demo_clave:'no-admitido'};
+  const created=await call('admin/equipo','POST',body,admin);assert.equal(created.status,201);const pid=created.data.id;assert.notEqual(pid,999);
+  assert.equal((await call('equipo')).data.some(p=>p.id===pid),false);assert.equal((await call('admin/equipo','GET',undefined,admin)).data.some(p=>p.id===pid),true);
+  await call('admin/equipo/'+pid,'PATCH',{estado:true,orden:1},admin);
+  let listed=(await call('equipo')).data;assert.equal(listed.some(p=>p.id===pid),true);assert.equal(listed.some(p=>'demo_clave' in p||'eliminado_at' in p),false);assert.deepEqual(listed.map(p=>p.orden),[1,1,2,3]);
+  await assert.rejects(()=>call('admin/equipo/'+pid,'PATCH',{orden:0},admin),e=>e.status===400);
+  await assert.rejects(()=>call('admin/equipo/'+pid,'PATCH',{nombre:''},admin),e=>e.status===400);
+  await assert.rejects(()=>call('admin/equipo/'+pid,'PATCH',{estado:'true'},admin),e=>e.status===400);
+  const updated=await call('admin/equipo/'+pid,'PATCH',{nombre:'Nombre actualizado'},admin);assert.equal(updated.data.biografia,body.biografia);assert.equal(updated.data.nombre,'Nombre actualizado');
+  await call('admin/equipo/'+pid,'DELETE',undefined,admin);assert.equal((await call('equipo')).data.some(p=>p.id===pid),false);
+  assert.equal((await call('admin/equipo','GET',undefined,admin)).data.some(p=>p.id===pid),false);
+  await assert.rejects(()=>call('admin/equipo/'+pid,'PATCH',{nombre:'No restaurar'},admin),e=>e.status===404);
+  assert.ok((await query('SELECT eliminado_at FROM equipo_miembros WHERE id=$1',[pid])).rows[0].eliminado_at);
+ }finally{await memory.close()}
+});

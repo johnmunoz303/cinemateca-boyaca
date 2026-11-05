@@ -5,7 +5,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports: ["127.0.0.1:5432:5432"]
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database:/docker-entrypoint-initdb.d:ro
@@ -24,7 +23,7 @@ services:
     build: {context: ., args: {SERVICE: frontend}}
     environment:
       BACKEND_URL: http://backend:3000
-    ports: ["3000:3000"]
+    ports: ["${FRONTEND_PORT:-3000}:3000"]
     depends_on: [backend]
   backend:
     mem_limit: 1536m

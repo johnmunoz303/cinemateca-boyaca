@@ -36,7 +36,10 @@ export default function CatalogSection({ openWork, section, me, setAuth, genre, 
             "Comedia",
             "Documental",
             "Suspenso",
-        ].map((g) => (<button key={g} className={genre === g ? "selected" : ""} onClick={() => setGenre(g)}>
+            "Ficción",
+            "Romance",
+            ...allWorks.flatMap(work => Array.isArray(work.generos) ? work.generos : []),
+        ].filter((value, index, values) => values.indexOf(value) === index).map((g) => (<button key={g} className={genre === g ? "selected" : ""} onClick={() => setGenre(g)}>
                     {g}
                   </button>))}
               </div>

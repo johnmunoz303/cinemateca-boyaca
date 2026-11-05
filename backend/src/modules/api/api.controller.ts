@@ -1,4 +1,5 @@
 import {limitWrites} from "@/modules/auth/request-security";
+import {teamRoutes} from "@/modules/equipo/team.controller";
 import { paymentsRoutes } from "@/modules/pagos/payments.controller";
 import { ticketingRoutes } from "@/modules/taquilla/ticketing.controller";
 import { authRoutes } from "@/modules/auth/auth.controller";
@@ -126,6 +127,8 @@ async function handle(req: NextRequest) {
       if (result) return result;
     }
     {
+      const teamResult = await teamRoutes(context);
+      if (teamResult) return teamResult;
       const result = await adminRoutes(context);
       if (result) return result;
     }

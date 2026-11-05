@@ -1,4 +1,5 @@
 import {updateProfile} from "@/modules/auth/password-change.service";
+import {cancelEnrollment} from "@/modules/cursos/cancel-enrollment.service";
 import { db } from "@/database/db";
 import {
   fail,
@@ -16,6 +17,13 @@ export async function profileRoutes({
   method,
   body,
 }: RouteContext) {
+  if (route === "me/inscripciones/cancelar" && method === "POST") {
+    const actor = await user(req), data = await body();
+    if (data.tipo !== "curso" && data.tipo !== "evento") {
+      return json({error:"Tipo de inscripción inválido"},400);
+    }
+    return json(await cancelEnrollment(actor.id, id(data.id), data.tipo));
+  }
   if (route === "me" && method === "GET") {
     const u = await user(req, false);
     if (!u) return json({ user: null });

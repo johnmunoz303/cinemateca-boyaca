@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Film, X } from "lucide-react";
+import { X } from "lucide-react";
+import { CinematecaMark } from "@/components/CinematecaBrand";
 import { api } from "@/lib/client";
 import type { Row } from "@/lib/types";
 export default function Auth({ mode, change, done, }: {
@@ -16,7 +17,7 @@ export default function Auth({ mode, change, done, }: {
         <button className="close" aria-label="Cerrar" onClick={() => change(null)}>
           <X />
         </button>
-        <Film size={36}/>
+        <CinematecaMark size={36}/>
         <h1>
           {mode === "register"
             ? "Crea tu perfil"

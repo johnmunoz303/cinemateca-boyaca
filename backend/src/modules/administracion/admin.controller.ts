@@ -1,4 +1,5 @@
 import {limitedForm} from "@/modules/api/form-data";
+import {ensureTeamSchema} from "@/modules/equipo/team-schema";
 import {updateAccount} from "./user-management.service";
 import {archiveFunction} from "@/modules/taquilla/archive-function.service";
 import { ensureEnrollmentDetails } from "@/modules/cursos/enrollment.service";
@@ -33,7 +34,8 @@ export async function adminRoutes({
         ((parts[1] === "funciones" &&
           ["GET", "POST", "PATCH", "DELETE"].includes(method)) ||
           (["obras", "salas"].includes(parts[1]) && method === "GET") ||
-          (parts[1] === "imagen" && method === "POST"))
+          (parts[1] === "imagen" && method === "POST") ||
+          (route === "admin/ticket" && method === "POST"))
       )
     )
       fail(403, "Permisos insuficientes");
@@ -65,7 +67,7 @@ export async function adminRoutes({
             ...r,
             permisos:
               r.nombre === "programador"
-                ? "Consultar obras y salas; crear, editar, publicar y cancelar funciones"
+                ? "Consultar obras y salas; crear, editar, publicar y cancelar funciones; validar tiquetes y registrar ingresos"
                 : r.nombre === "administrador"
                   ? "Gestionar usuarios, roles, videos, obras, cursos, lecciones, aulas, eventos, paradas, salas, funciones y reportes"
                   : "Consultar contenido; reproducir con cuenta; gestionar favoritos, perfil, inscripciones y reservas propias",
@@ -153,11 +155,13 @@ export async function adminRoutes({
         file = form.get("file"),
         rid = id(form.get("id")),
         resource = String(form.get("recurso"));
+        if(resource === "equipo") await ensureTeamSchema();
       if (actor.rol === "programador" && resource !== "funciones")
         fail(403, "Solo puedes cargar imágenes de funciones");
       if (resource === "funciones") await ensureFunctionDetails();
       const options: Record<string, [string, string]> = {
         obras: ["obras", "poster"],
+          equipo: ["equipo_miembros", "foto"],
         cursos: ["cursos", "poster"],
         eventos: ["eventos", "imagen"],
         aulas: ["aulas", "imagen"],

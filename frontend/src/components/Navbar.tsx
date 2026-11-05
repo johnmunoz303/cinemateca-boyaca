@@ -1,26 +1,22 @@
 "use client";
-import { Menu, Film, User, Sun, Moon } from "lucide-react";
+import { Menu, User } from "lucide-react";
+import CinematecaBrand from "./CinematecaBrand";
 import type { Row } from "@/lib/types";
 type Props = {
     setDrawer: (value: boolean) => void;
     navigate: (value: string) => void;
     me: Row;
-    setDark: (value: boolean) => void;
-    dark: boolean;
     setAuth: (value: string | null) => void;
     section: string;
 };
-export default function Navbar({ setDrawer, navigate, me, setDark, dark, setAuth, section }: Props) {
+export default function Navbar({ setDrawer, navigate, me, setAuth, section }: Props) {
     return (<header>
         <div className="header-inner">
           <button aria-label="Abrir menú" onClick={() => setDrawer(true)}>
             <Menu />
           </button>
           <button className="brand" onClick={() => navigate("Películas")}>
-            <Film />
-            <span>
-              Cinemateca
-            </span>
+            <CinematecaBrand />
           </button>
           <div className="header-actions">
             {me.user && (<span className="tag">
@@ -30,9 +26,6 @@ export default function Navbar({ setDrawer, navigate, me, setDark, dark, setAuth
                     ? "Programador de funciones"
                     : "Espectador"}
               </span>)}
-            <button aria-label="Cambiar tema" onClick={() => setDark(!dark)}>
-              {dark ? <Sun /> : <Moon />}
-            </button>
             <button aria-label="Mi perfil" onClick={() => me.user ? navigate("Mi perfil") : setAuth("login")}>
               <User />
             </button>

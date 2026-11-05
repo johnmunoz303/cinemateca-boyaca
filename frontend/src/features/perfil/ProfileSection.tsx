@@ -1,5 +1,6 @@
 "use client";
 import { User, LogOut } from "lucide-react";
+import { useState } from "react";
 import { api, date } from "@/lib/client";
 import type { Row } from "@/lib/types";
 type Props = {
@@ -16,6 +17,14 @@ type Props = {
     navigate: (value: string) => void;
 };
 export default function ProfileSection({ me, setEditProfile, editProfile, setAuth, setMe, refreshMe, flash, cards, allWorks, setDetail, navigate }: Props) {
+    const [cancelling, setCancelling] = useState("");
+    async function cancel(kind: "curso" | "evento", item: Row) {
+        if (cancelling || !window.confirm(`¿Cancelar tu inscripción a «${item.titulo}»?${kind === "curso" ? " Se eliminará tu avance de este programa." : ""}`)) return;
+        setCancelling(kind + item.id);
+        try { await api("me/inscripciones/cancelar", "POST", {tipo:kind,id:kind === "curso" ? item.curso_id : item.id}); await refreshMe(); flash("Inscripción cancelada"); }
+        catch (error) { flash((error as Error).message); }
+        finally { setCancelling(""); }
+    }
     return (<>
             {me.user ? (<>
                 <div className="profile">
@@ -88,17 +97,19 @@ export default function ProfileSection({ me, setEditProfile, editProfile, setAut
                     <b>{me.events.length}</b>Eventos inscritos
                   </div>
                 </div>
-                {me.courses.map((c: Row) => (<p key={c.id}>
+                {me.courses.map((c: Row) => (<div className="reservation-row" key={c.id}>
                     {c.titulo}
                     <span className="tag">{c.progreso_porcentaje}%</span>
-                  </p>))}
+                    <button disabled={!!cancelling} onClick={() => cancel("curso", c)}>{cancelling === "curso" + c.id ? "Cancelando…" : "Cancelar inscripción"}</button>
+                  </div>))}
                 <h2 className="strip-title">Favoritos</h2>
                 {cards(allWorks.filter((w) => me.favorites.includes(w.id)), true)}
                 <h2 className="strip-title">Eventos y convocatorias</h2>
-                {me.events.map((e: Row) => (<p key={e.id}>
+                {me.events.map((e: Row) => (<div className="reservation-row" key={e.id}>
                     {e.titulo}
                     <span className="tag">{e.inscripcion_estado}</span>
-                  </p>))}
+                    <button disabled={!!cancelling} onClick={() => cancel("evento", e)}>{cancelling === "evento" + e.id ? "Cancelando…" : "Cancelar inscripción"}</button>
+                  </div>))}
                 <h2 className="strip-title">Mis reservas</h2>
                 {me.reservations.map((r: Row) => (<div className="reservation-row" key={r.id}>
                     <span>

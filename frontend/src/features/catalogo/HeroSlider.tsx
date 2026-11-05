@@ -18,7 +18,7 @@ export default function HeroSlider({works, openWork}: {works: Row[]; openWork: (
   const current = index % slides.length;
   const work = slides[current];
   return <section className="catalog-hero" aria-label="Obras destacadas" aria-roledescription="carrusel">
-    <img key={work.id} className="catalog-hero-image" src={work.poster || "/posters/default.svg"} alt={"Cartel de " + work.titulo} />
+    <img key={work.id} className="catalog-hero-image" style={work.titulo.trim().toLocaleLowerCase() === "tundama" ? {objectPosition:"center top"} : undefined} src={work.poster || "/posters/default.svg"} alt={"Cartel de " + work.titulo} />
     <div className="catalog-hero-info" aria-live="off">
       <p className="eyebrow">CINEMATECA · SELECCIÓN DESTACADA</p>
       <h2>{work.titulo}</h2>

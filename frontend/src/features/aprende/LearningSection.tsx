@@ -47,6 +47,6 @@ export default function LearningSection({ subtab, setSubtab, data, setDetail }: 
                       </div>
                     </article>))}
                 </div>
-              </>) : (<Aulas onSelect={setDetail}/>)}
+              </>) : (<Aulas onPrograms={() => {setSubtab("Programas");window.scrollTo({top:0,behavior:"smooth"});}}/>)}
           </>);
 }

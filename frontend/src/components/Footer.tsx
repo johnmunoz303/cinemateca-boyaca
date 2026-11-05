@@ -1,15 +1,13 @@
 "use client";
-import { Film, MapPin, Mail, Phone } from "lucide-react";
+import { MapPin, Mail, Phone } from "lucide-react";
+import CinematecaBrand from "./CinematecaBrand";
 export default function Footer() {
     return (<footer>
       <div className="footer-grid">
         <div>
-          <div className="brand">
-            <Film />
-            <span>
-              CINEMATECA<small>DE BOYACÁ</small>
-            </span>
-          </div>
+          <a className="brand" href="/" aria-label="Cinemateca de Boyacá — ir al inicio" style={{color:"inherit",textDecoration:"none"}}>
+            <CinematecaBrand />
+          </a>
           <p>
             Preservamos la memoria audiovisual de Boyacá y llevamos el cine a
             todos los rincones del departamento.

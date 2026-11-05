@@ -1,0 +1,58 @@
+.section {
+    max-width: 52rem;
+    margin-inline: auto;
+}
+
+.section > h1,
+.heading,
+.label {
+    text-align: center;
+}
+
+.heading {
+    margin-block: 2rem 1rem;
+}
+
+.featured {
+    background: #801013;
+    color: #fff5e7;
+    padding: clamp(1rem, 4vw, 2rem);
+    border-radius: 1rem;
+    overflow-wrap: anywhere;
+}
+
+.label {
+    margin: 0 0 .75rem;
+    font-weight: 700;
+}
+
+.illustration {
+    display: grid;
+    place-items: center;
+    min-height: 8rem;
+    margin-bottom: 1rem;
+    border-radius: .65rem;
+    background: #fff9f3;
+    color: #a66708;
+}
+
+.metadata {
+    font-size: .9rem;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    margin-top: 1rem;
+}
+
+.featured .actions {
+    justify-content: center;
+}
+
+.featured .actions a {
+    background: #fff5e7;
+    color: #31070d;
+    text-align: center;
+}

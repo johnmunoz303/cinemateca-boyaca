@@ -42,3 +42,8 @@ test-results/
 .DS_Store
 Thumbs.db
 *.zip
+
+# Declaraciones generadas por Next.js.
+next-env.d.ts
+
+/entrega/multimedia.tar.gz
