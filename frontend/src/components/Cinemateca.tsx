@@ -11,6 +11,8 @@ import EventsSection from "@/features/eventos/EventsSection";
 import TravelCalendar from "@/features/rodante/TravelCalendar";
 import ShowtimesSection from "@/features/taquilla/ShowtimesSection";
 import TransparencySection from "@/features/transparencia/TransparencySection";
+import LegalSectionPage from "@/features/transparencia/LegalSectionPage";
+import { legalSections } from "@/features/transparencia/legal-sections";
 import ProfileSection from "@/features/perfil/ProfileSection";
 import Map from "@/components/LocationMap";
 import Footer from "@/components/Footer";
@@ -24,8 +26,8 @@ import type { Row } from "@/lib/types";
 import { useEffect, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
 import { resourceNames } from "../features/administracion/AdminFields";
-export default function Cinemateca() {
-    const [section, setSection] = useState("Películas"), [drawer, setDrawer] = useState(false), [data, setData] = useState<Row[]>([]), [allWorks, setAllWorks] = useState<Row[]>([]), [me, setMe] = useState<Row>({
+export default function Cinemateca({ initialSection = "Películas" }: { initialSection?: string }) {
+    const [section, setSection] = useState(initialSection), [drawer, setDrawer] = useState(false), [data, setData] = useState<Row[]>([]), [allWorks, setAllWorks] = useState<Row[]>([]), [me, setMe] = useState<Row>({
         user: null,
         favorites: [],
         courses: [],
@@ -93,6 +95,7 @@ export default function Cinemateca() {
         };
     }, [section]);
     const navigate = (name: string) => {
+        if (window.location.pathname.startsWith("/legal/")) window.history.replaceState(null, "", "/");
         setDetail(null);
         setSection(name);
         setDrawer(false);
@@ -218,6 +221,9 @@ export default function Cinemateca() {
         {!loading && section === "Cinemateca Rodante" && (<TravelCalendar setMonth={setMonth} month={month} data={data} setDetail={setDetail}/>)}
         {!loading && section === "Cinemateca Física" && (<ShowtimesSection data={data} requireLogin={requireLogin} setDetail={setDetail} error={error}/>)}
         {!loading && section === "Transparencia" && (<TransparencySection data={data}/>)}
+        {legalSections.filter(entry => entry.title === section).map(entry => (
+          <LegalSectionPage key={entry.slug} slug={entry.slug} title={entry.title} />
+        ))}
         {section === "Mi perfil" && (<ProfileSection me={me} setEditProfile={setEditProfile} editProfile={editProfile} setAuth={setAuth} setMe={setMe} refreshMe={refreshMe} flash={flash} cards={cards} allWorks={allWorks} setDetail={setDetail} navigate={navigate}/>)}
         {section === "Administración" &&
             ["administrador", "programador"].includes(me.user?.rol) && (<Admin key={adminResource} initialResource={me.user.rol === "programador" ? "funciones" : adminResource} programmer={me.user.rol === "programador"} flash={flash}/>)}

@@ -5,6 +5,7 @@ import {archiveFunction} from "@/modules/taquilla/archive-function.service";
 import { ensureEnrollmentDetails } from "@/modules/cursos/enrollment.service";
 import { ensureFeaturedWorks } from "@/modules/obras/featured-schema";
 import { ensureFunctionDetails } from "@/modules/taquilla/function-schema";
+import { ensureLegalSections } from "@/modules/transparencia/legal-schema";
 import { saveWork } from "@/modules/obras/obras.service";
 import { randomUUID, createHash } from "node:crypto";
 import { mkdir, writeFile, rm, unlink } from "node:fs/promises";
@@ -476,6 +477,7 @@ export async function adminRoutes({
           "fecha_documento",
           "fuente_url",
           "publicado",
+          "seccion",
         ],
       },
       personas: {
@@ -489,6 +491,7 @@ export async function adminRoutes({
     };
     const resource = resources[parts[1]];
     if (!resource) fail(404, "Recurso no encontrado");
+    if (parts[1] === "legal") await ensureLegalSections();
     if (method === "GET" && parts[1] === "obras")
       return json(
         (
@@ -545,6 +548,9 @@ export async function adminRoutes({
       if (method === "POST" && ["usuarios", "comentarios"].includes(parts[1]))
         fail(403, "Este recurso no admite creación administrativa");
       const b = await body();
+      if (parts[1] === "legal" && b.seccion !== undefined &&
+          !["institucionales", "privacidad", "terminos", "pendientes"].includes(b.seccion))
+        fail(400, "Sección legal inválida");
       await validateRecord(
         parts[1],
         b,

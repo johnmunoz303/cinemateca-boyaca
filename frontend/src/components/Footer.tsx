@@ -1,6 +1,7 @@
 "use client";
 import { MapPin, Mail, Phone } from "lucide-react";
 import CinematecaBrand from "./CinematecaBrand";
+import { legalSections } from "@/features/transparencia/legal-sections";
 export default function Footer() {
     return (<footer>
       <div className="footer-grid">
@@ -38,10 +39,9 @@ export default function Footer() {
         </div>
         <div>
           <h3>INFORMACIÓN LEGAL</h3>
-          <p>Documentos institucionales</p>
-          <p>Política de Privacidad</p>
-          <p>Términos de Uso</p>
-          <p>Documentos pendientes de validación</p>
+          {legalSections.map(({ slug, title }) => (
+            <p key={slug}><a href={"/legal/" + slug}>{title}</a></p>
+          ))}
         </div>
       </div>
       <small>

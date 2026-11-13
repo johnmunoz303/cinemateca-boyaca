@@ -5,7 +5,7 @@ import { date } from "@/lib/client";
 import type { Row } from "@/lib/types";
 import styles from "./TransparencySection.module.css";
 
-function LegalDocument({ document, featured = false }: { document: Row; featured?: boolean }) {
+export function LegalDocument({ document, featured = false }: { document: Row; featured?: boolean }) {
     return (
         <article className={featured ? styles.featured : "route-card"}>
             {featured && (
